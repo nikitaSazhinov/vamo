@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Box } from '@mui/material';
 import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
-import ResponseSection from '../components/ResponseSection';
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -23,11 +25,10 @@ export default function Home() {
   const sectionsRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const preferencesRef = useRef<HTMLDivElement>(null);
-  const responseRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const totalSections = 4;
+  const totalSections = 3;
 
   const scrollToSectionByIndex = useCallback(
     (index: number) => {
@@ -51,6 +52,17 @@ export default function Home() {
     },
     [isScrolling, totalSections]
   );
+
+  // Check for section parameter and navigate accordingly
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section === 'location') {
+      // Small delay to ensure the component is mounted
+      setTimeout(() => {
+        scrollToSectionByIndex(1); // Location section is at index 1
+      }, 100);
+    }
+  }, [searchParams, scrollToSectionByIndex]);
 
   // Handle wheel scroll events
   useEffect(() => {
@@ -242,6 +254,9 @@ export default function Home() {
     setError('');
     setResponse('');
 
+    // Navigate to recommendations page with loading state
+    router.push('/recommendations?loading=true');
+
     // Create the prompt with location and preferences - modified to only give content about places
     let prompt = `Provide specific recommendations for places to visit within 5km of your current location.
 
@@ -321,16 +336,20 @@ Note: Provide recommendations that are actually available in the specific area w
       if (content) {
         setResponse(content);
         console.log('Recommendations:', content);
-        // Automatically scroll to the response section when response is available
-        setTimeout(() => {
-          scrollToSectionByIndex(3);
-        }, 500);
+        // Navigate to recommendations page with the response
+        router.push(`/recommendations?response=${encodeURIComponent(content)}`);
       } else {
         throw new Error('No content found in response');
       }
     } catch (error: any) {
       console.error('Error:', error);
       setError(error.message || 'An error occurred');
+      // Navigate to recommendations page with error
+      router.push(
+        `/recommendations?error=${encodeURIComponent(
+          error.message || 'An error occurred'
+        )}`
+      );
     } finally {
       setLoading(false);
     }
@@ -420,24 +439,15 @@ Note: Provide recommendations that are actually available in the specific area w
             onPreferencesSelected={handlePreferencesSelected}
           />
         </Box>
-
-        {/* Response Section */}
-        <Box
-          ref={responseRef}
-          sx={{
-            position: 'absolute',
-            top: '300vh',
-            width: '100%',
-            height: '100vh',
-          }}
-        >
-          <ResponseSection
-            response={response}
-            loading={loading}
-            error={error}
-          />
-        </Box>
       </Box>
     </Box>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
