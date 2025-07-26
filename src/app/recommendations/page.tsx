@@ -189,10 +189,12 @@ const ResponseContent = styled(Box)(({ theme }) => ({
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
   position: 'relative',
   zIndex: 3,
+  marginLeft: 0,
   marginRight: 'auto',
   '@media (max-width:768px)': {
     padding: theme.spacing(3),
-    margin: theme.spacing(0, 2),
+    marginLeft: 0,
+    marginRight: theme.spacing(2),
   },
 }));
 
@@ -312,7 +314,13 @@ function RecommendationsContent() {
 
       <Container
         maxWidth='xl'
-        sx={{ position: 'relative', zIndex: 3, width: '100%' }}
+        sx={{
+          position: 'relative',
+          zIndex: 3,
+          width: '100%',
+          paddingLeft: '12px',
+          paddingRight: '12px',
+        }}
       >
         <SectionTitle>Recommendations</SectionTitle>
 
