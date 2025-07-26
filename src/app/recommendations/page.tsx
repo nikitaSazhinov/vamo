@@ -288,7 +288,7 @@ function RecommendationsContent() {
   }, [searchParams]);
 
   const handleBackClick = () => {
-    router.push('/?section=location');
+    router.push('/');
   };
 
   const handleLogoClick = () => {

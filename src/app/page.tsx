@@ -71,12 +71,24 @@ function HomeContent() {
       const target = event.target as HTMLElement;
       const isInsideScrollableContent =
         target.closest('[data-scrollable-content]') ||
+        target.closest('.preferences-scrollable') ||
+        target.closest('[data-testid="preferences-scroll-area"]') ||
         target.closest('.MuiPaper-root') ||
         target.closest('[role="dialog"]');
 
       // If we're inside a scrollable content area, don't prevent default
       if (isInsideScrollableContent) {
         return;
+      }
+
+      // Additional check: if we're in section 2 (preferences), allow some scrolling
+      if (currentSection === 2) {
+        const preferencesSection =
+          target.closest('[class*="preferences"]') ||
+          target.closest('[data-scrollable-content]');
+        if (preferencesSection) {
+          return;
+        }
       }
 
       event.preventDefault();
@@ -237,10 +249,12 @@ function HomeContent() {
     scrollToSectionByIndex(2);
   };
 
-  const handlePreferencesSelected = async (preferences: string[]) => {
+  const handlePreferencesSelected = (preferences: string[]) => {
     setUserPreferences(preferences);
+    // Just store preferences, don't auto-call API
+  };
 
-    // Call the API when we have both location and preferences
+  const handleGoButtonClick = async (preferences: string[]) => {
     if (userLocation && preferences.length > 0) {
       await callRecommendationsAPI(userLocation, preferences);
     }
@@ -413,6 +427,8 @@ function HomeContent() {
         >
           <PreferencesSection
             onPreferencesSelected={handlePreferencesSelected}
+            onGoButtonClick={handleGoButtonClick}
+            userLocation={userLocation}
           />
         </Box>
       </Box>
