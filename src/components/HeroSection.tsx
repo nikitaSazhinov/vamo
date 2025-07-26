@@ -8,8 +8,9 @@ const HeroContainer = styled(Box)(({ theme }) => ({
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   alignItems: 'center',
+  paddingTop: '15vh',
   backgroundImage: 'url(/327abfeb40ffd946c6b877fbba3543ea.jpg)',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
@@ -24,7 +25,7 @@ const HeroContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.4)', // Dark overlay for better text readability
+    background: 'rgba(76, 175, 80, 0.3)', // Green overlay on the image
     pointerEvents: 'none',
   },
   '&::after': {
@@ -35,85 +36,122 @@ const HeroContainer = styled(Box)(({ theme }) => ({
     right: 0,
     bottom: 0,
     background:
-      'radial-gradient(circle at 30% 70%, rgba(255, 20, 147, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(0, 255, 255, 0.2) 0%, transparent 50%)',
+      'radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(0, 0, 0, 0.1) 0%, transparent 50%)',
     pointerEvents: 'none',
+  },
+  '@media (max-width:600px)': {
+    paddingTop: '12vh',
+  },
+  '@media (max-width:400px)': {
+    paddingTop: '10vh',
   },
 }));
 
-const LogoText = styled(Typography)(({ theme }) => ({
-  fontSize: '4rem',
-  fontFamily: 'var(--font-pacifico), cursive',
-  fontWeight: 400,
-  background: 'linear-gradient(45deg, #FFFFFF, #FFD700, #FFFFFF)',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-  textShadow: '4px 4px 0px #000000, -2px -2px 0px #FF1493',
-  marginBottom: theme.spacing(2),
-  textAlign: 'center',
+const LogoImage = styled('img')(({ theme }) => ({
+  maxWidth: '500px',
+  width: '90%',
+  height: 'auto',
+  marginBottom: theme.spacing(1),
+  zIndex: 4,
   position: 'relative',
-  zIndex: 3,
+  filter:
+    'drop-shadow(0 8px 0px #000000) drop-shadow(0 12px 32px rgba(0, 0, 0, 0.6))',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    filter:
+      'drop-shadow(0 10px 0px #000000) drop-shadow(0 15px 40px rgba(0, 0, 0, 0.8))',
+  },
   '@media (max-width:600px)': {
-    fontSize: '3rem',
+    maxWidth: '350px',
+    width: '85%',
+    marginBottom: theme.spacing(0.5),
   },
   '@media (max-width:400px)': {
-    fontSize: '2.5rem',
+    maxWidth: '280px',
+    width: '80%',
+    marginBottom: theme.spacing(0.5),
   },
 }));
 
 const TaglineText = styled(Typography)(({ theme }) => ({
-  fontSize: '1.3rem',
+  fontSize: '1.4rem',
   fontFamily: 'var(--font-inter), sans-serif',
   fontWeight: 700,
   color: '#FFFFFF',
   textAlign: 'center',
-  marginBottom: theme.spacing(4),
+  marginBottom: theme.spacing(3),
   textShadow:
-    '3px 3px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 20, 147, 0.5)',
+    '3px 3px 0px #000000, -1px -1px 0px #000000, 1px -1px 0px #000000, -1px 1px 0px #000000',
   maxWidth: '600px',
-  lineHeight: 1.5,
+  lineHeight: 1.4,
   position: 'relative',
   zIndex: 3,
-  background: 'rgba(0, 0, 0, 0.3)',
-  padding: theme.spacing(2, 3),
+  background: '#4CAF50',
+  padding: theme.spacing(2.5, 3),
+  paddingTop: theme.spacing(3.5),
   borderRadius: '20px',
-  border: '2px solid rgba(255, 255, 255, 0.3)',
-  backdropFilter: 'blur(10px)',
+  border: '3px solid #000000',
+  boxShadow: '0 8px 0px #000000, 0 12px 32px rgba(0, 0, 0, 0.5)',
+  marginTop: theme.spacing(-1),
   '@media (max-width:600px)': {
     fontSize: '1.1rem',
     maxWidth: '400px',
-    padding: theme.spacing(1.5, 2),
+    padding: theme.spacing(2, 2),
+    paddingTop: theme.spacing(2.8),
+    marginTop: theme.spacing(-0.5),
+  },
+  '@media (max-width:400px)': {
+    fontSize: '1rem',
+    maxWidth: '320px',
+    padding: theme.spacing(1.8, 1.8),
+    paddingTop: theme.spacing(2.5),
   },
 }));
 
 const StartButton = styled(Button)(({ theme }) => ({
-  fontSize: '1.2rem',
-  fontFamily: 'var(--font-pacifico), cursive',
-  fontWeight: 400,
-  padding: '16px 48px',
-  borderRadius: '50px',
-  background: 'linear-gradient(45deg, #FF1493, #00FFFF)',
-  color: '#FFFFFF',
-  border: '4px solid #FFFFFF',
-  boxShadow:
-    '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.2)',
-  textTransform: 'none',
+  fontSize: '1.3rem',
+  fontFamily: 'var(--font-inter), sans-serif',
+  fontWeight: 900,
+  padding: '20px 50px',
+  borderRadius: '16px',
+  background: 'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
+  color: '#000000',
+  border: '4px solid #000000',
+  textTransform: 'uppercase',
+  letterSpacing: '1px',
   position: 'relative',
   zIndex: 3,
-  transition: 'all 0.3s ease',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  overflow: 'hidden',
+  boxShadow: '0 8px 0px #000000, 0 12px 32px rgba(0, 0, 0, 0.4)',
+  '&:before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, #FFA000 0%, #FFD700 100%)',
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    zIndex: -1,
+  },
   '&:hover': {
-    transform: 'translateY(-4px) scale(1.05)',
-    background: 'linear-gradient(45deg, #00FFFF, #FF1493)',
-    boxShadow:
-      '0 12px 48px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
-    borderColor: '#FFD700',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 10px 0px #000000, 0 15px 40px rgba(0, 0, 0, 0.6)',
+    '&:before': {
+      opacity: 1,
+    },
   },
   '&:active': {
-    transform: 'translateY(-2px) scale(1.02)',
+    transform: 'translateY(2px)',
+    boxShadow: '0 4px 0px #000000, 0 8px 20px rgba(0, 0, 0, 0.4)',
+    transition: 'all 0.1s ease',
   },
   '@media (max-width:600px)': {
-    fontSize: '1rem',
-    padding: '14px 36px',
+    fontSize: '1.1rem',
+    padding: '18px 40px',
   },
 }));
 
@@ -128,13 +166,12 @@ const FloatingElement = styled(Box)<{
   width: '60px',
   height: '60px',
   borderRadius: '50%',
-  background:
-    'linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 20, 147, 0.3))',
+  background: 'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
   animation: `float ${3 + Math.random() * 2}s ease-in-out infinite`,
   animationDelay: delay,
   zIndex: 2,
-  border: '2px solid rgba(255, 255, 255, 0.3)',
-  backdropFilter: 'blur(5px)',
+  border: '4px solid #000000',
+  boxShadow: '0 6px 0px #000000, 0 10px 20px rgba(0, 0, 0, 0.4)',
   '@keyframes float': {
     '0%, 100%': {
       transform: 'translateY(0px) rotate(0deg)',
@@ -146,56 +183,7 @@ const FloatingElement = styled(Box)<{
   '@media (max-width:600px)': {
     width: '40px',
     height: '40px',
-  },
-}));
-
-const ScrollIndicator = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  bottom: '30px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 3,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  color: '#FFFFFF',
-  animation: 'bounce 2s ease-in-out infinite',
-  cursor: 'pointer',
-  '@keyframes bounce': {
-    '0%, 100%': {
-      transform: 'translateX(-50%) translateY(0px)',
-    },
-    '50%': {
-      transform: 'translateX(-50%) translateY(-10px)',
-    },
-  },
-}));
-
-const ScrollText = styled(Typography)(({ theme }) => ({
-  fontSize: '0.9rem',
-  fontFamily: 'var(--font-inter), sans-serif',
-  fontWeight: 600,
-  color: '#FFFFFF',
-  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
-  marginBottom: theme.spacing(0.5),
-}));
-
-const ScrollArrow = styled(Box)(({ theme }) => ({
-  width: '30px',
-  height: '30px',
-  border: '2px solid #FFFFFF',
-  borderTop: 'none',
-  borderRight: 'none',
-  transform: 'rotate(-45deg)',
-  animation: 'arrowMove 2s ease-in-out infinite',
-  '@keyframes arrowMove': {
-    '0%, 100%': {
-      transform: 'rotate(-45deg) translateY(0px)',
-    },
-    '50%': {
-      transform: 'rotate(-45deg) translateY(5px)',
-    },
+    border: '3px solid #000000',
   },
 }));
 
@@ -222,7 +210,10 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           textAlign='center'
           px={2}
         >
-          <LogoText variant='h1'>VAMO!</LogoText>
+          <LogoImage
+            src='/ChatGPT%20Image%20Jul%2026,%202025,%2001_59_31%20PM.png'
+            alt='VAMO Logo'
+          />
 
           <TaglineText variant='h4'>
             🌟 Your AI-powered adventure buddy! 🌟
@@ -236,11 +227,6 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           </StartButton>
         </Box>
       </Container>
-
-      <ScrollIndicator onClick={onGetStarted}>
-        <ScrollText>Scroll Down</ScrollText>
-        <ScrollArrow />
-      </ScrollIndicator>
     </HeroContainer>
   );
 }
