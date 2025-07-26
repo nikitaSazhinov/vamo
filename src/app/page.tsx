@@ -246,9 +246,9 @@ function HomeContent() {
   const handlePreferencesSelected = async (preferences: string[]) => {
     setUserPreferences(preferences);
 
-    // Call the API when we have both location and preferences
-    if (userLocation && preferences.length > 0) {
-      await callRecommendationsAPI(userLocation, preferences);
+    // Call the API when we have location, preferences, and weather preference
+    if (userLocation && preferences.length > 0 && weatherPreference) {
+      await callRecommendationsAPI(userLocation, preferences, weatherPreference);
     }
   };
 
@@ -256,11 +256,17 @@ function HomeContent() {
     setWeatherPreference(preference);
     // Automatically move to the next section after selection
     scrollToSectionByIndex(3);
+    
+    // Call the API if we already have location and preferences
+    if (userLocation && userPreferences.length > 0) {
+      callRecommendationsAPI(userLocation, userPreferences, preference);
+    }
   };
 
   const callRecommendationsAPI = async (
     location: { latitude: number; longitude: number },
-    preferences: string[]
+    preferences: string[],
+    weatherPreference: 'indoor' | 'outdoor'
   ) => {
     setLoading(true);
     setError('');
@@ -269,7 +275,7 @@ function HomeContent() {
     // Navigate to recommendations page with loading state
     router.push('/recommendations?loading=true');
 
-    // Create the prompt with location and preferences - modified to only give content about places
+    // Create the prompt with location, preferences, and weather preference
     let prompt = `Provide specific recommendations for places to visit within 5km of your current location.
 
 Please structure your response with:
@@ -280,6 +286,9 @@ Please structure your response with:
 - Include brief descriptions for each recommendation
 
 Format your response to be visually appealing and easy to read.`;
+
+    // Add weather preference context
+    prompt += ` The user prefers ${weatherPreference} activities.`;
 
     if (preferences.length > 0) {
       const preferenceLabels = preferences.map((pref) => {
