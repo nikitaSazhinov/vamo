@@ -2,7 +2,7 @@
 
 import { Box, Typography, Container, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
+import Markdown from 'markdown-to-jsx';
 
 const ResponseContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -197,60 +197,6 @@ export default function ResponseSection({ response, loading, error }: ResponseSe
     event.stopPropagation();
   };
 
-  // Function to parse and format the response
-  const formatResponse = (text: string): string => {
-    try {
-      // First, try to parse as JSON (in case it's already in Contentful format)
-      const parsed = JSON.parse(text);
-      if (parsed.content) {
-        return documentToHtmlString(parsed);
-      }
-    } catch {
-      // If not JSON, treat as plain text and convert to HTML
-      // Convert markdown-like formatting to HTML
-      let formattedText = text
-        // Convert headers
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        // Convert bold text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/__(.*?)__/g, '<strong>$1</strong>')
-        // Convert italic text
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/_(.*?)_/g, '<em>$1</em>')
-        // Convert line breaks to paragraphs
-        .split('\n\n')
-        .map(paragraph => {
-          const trimmed = paragraph.trim();
-          if (trimmed.startsWith('<h') || trimmed.startsWith('##') || trimmed.startsWith('#')) {
-            return trimmed;
-          }
-          return `<p>${trimmed}</p>`;
-        })
-        .join('')
-        // Convert lists - handle consecutive list items
-        .replace(/(<p>\* .*?<\/p>)+/g, (match) => {
-          const listItems = match.match(/<p>\* (.*?)<\/p>/g);
-          if (listItems) {
-            const items = listItems.map(item => 
-              item.replace(/<p>\* (.*?)<\/p>/, '<li>$1</li>')
-            );
-            return `<ul>${items.join('')}</ul>`;
-          }
-          return match;
-        })
-        // Clean up empty paragraphs
-        .replace(/<p><\/p>/g, '')
-        .replace(/<p>\s*<\/p>/g, '');
-
-      return formattedText;
-    }
-    
-    // Fallback: return the original text if all parsing fails
-    return text;
-  };
-
   return (
     <ResponseContainer>
       <SectionTitle>Your Recommendations</SectionTitle>
@@ -269,9 +215,11 @@ export default function ResponseSection({ response, loading, error }: ResponseSe
       
       {response && !loading && !error && (
         <ResponseContent onWheel={handleContentScroll} data-scrollable-content>
-          <ResponseText
-            dangerouslySetInnerHTML={{ __html: formatResponse(response) }}
-          />
+          <ResponseText>
+            <Markdown>
+              {response}
+            </Markdown>
+          </ResponseText>
         </ResponseContent>
       )}
     </ResponseContainer>

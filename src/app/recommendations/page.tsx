@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 
 const RecommendationsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -198,19 +199,61 @@ const ResponseContent = styled(Box)(({ theme }) => ({
 
 const ResponseText = styled(Typography)(({ theme }) => ({
   fontSize: '1.1rem',
-  lineHeight: 1.7,
-  color: '#000000',
   fontFamily: 'var(--font-inter), sans-serif',
-  fontWeight: 600,
-  whiteSpace: 'pre-wrap',
-  textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)',
-  '& strong': {
-    color: '#1a1a1a',
-    fontWeight: 800,
+  fontWeight: 400,
+  lineHeight: 1.6,
+  color: '#000000',
+  '& h1, & h2, & h3, & h4, & h5, & h6': {
+    color: '#000000',
+    fontWeight: 600,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+  },
+  '& strong, & b': {
+    color: '#000000',
+    fontWeight: 600,
+  },
+  '& ul, & ol': {
+    paddingLeft: theme.spacing(3),
+  },
+  '& li': {
+    marginBottom: theme.spacing(0.5),
+  },
+  '& p': {
+    marginBottom: theme.spacing(1.5),
+  },
+  '& a': {
+    color: '#000000',
+    textDecoration: 'none',
+    fontWeight: 600,
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  '& blockquote': {
+    borderLeft: '4px solid #000000',
+    paddingLeft: theme.spacing(2),
+    margin: theme.spacing(2, 0),
+    fontStyle: 'italic',
+    background: 'rgba(0, 0, 0, 0.05)',
+    padding: theme.spacing(2),
+    borderRadius: '8px',
+  },
+  '& code': {
+    background: 'rgba(0, 0, 0, 0.1)',
+    padding: theme.spacing(0.5, 1),
+    borderRadius: '4px',
+    fontFamily: 'monospace',
+  },
+  '& pre': {
+    background: 'rgba(0, 0, 0, 0.05)',
+    padding: theme.spacing(2),
+    borderRadius: '8px',
+    overflow: 'auto',
+    margin: theme.spacing(2, 0),
   },
   '@media (max-width:600px)': {
     fontSize: '1rem',
-    lineHeight: 1.6,
   },
 }));
 
@@ -324,7 +367,11 @@ function RecommendationsContent() {
 
         {recommendations && !loading && !error && (
           <ResponseContent>
-            <ResponseText>{recommendations}</ResponseText>
+            <ResponseText>
+              <Markdown>
+                {recommendations}
+              </Markdown>
+            </ResponseText>
           </ResponseContent>
         )}
 
