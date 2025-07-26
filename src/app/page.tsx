@@ -6,6 +6,7 @@ import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
 import ResponseSection from '../components/ResponseSection';
+import WeatherSection from '../components/WeatherSection';
 
 export default function Home() {
   const [userLocation, setUserLocation] = useState<{
@@ -27,7 +28,7 @@ export default function Home() {
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const totalSections = 4;
+  const totalSections = 5;
 
   const scrollToSectionByIndex = useCallback(
     (index: number) => {
@@ -383,11 +384,23 @@ export default function Home() {
           <LocationSection onConfirmLocation={handleConfirmLocation} />
         </Box>
 
-        {/* Preferences Section */}
+        {/* Weather Section */}
         <Box
           sx={{
             position: 'absolute',
             top: '200vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <WeatherSection coordinates={userLocation} />
+        </Box>
+
+        {/* Preferences Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '300vh',
             width: '100%',
             height: '100vh',
           }}
@@ -402,7 +415,7 @@ export default function Home() {
           ref={responseRef}
           sx={{
             position: 'absolute',
-            top: '300vh',
+            top: '400vh',
             width: '100%',
             height: '100vh',
           }}
