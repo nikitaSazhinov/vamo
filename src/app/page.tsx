@@ -1,4 +1,5 @@
 import Image from "next/image";
+import MistralForm from "@/components/Testform";
 
 export default function Home() {
   return (
@@ -50,6 +51,7 @@ export default function Home() {
             Read our docs
           </a>
         </div>
+        <MistralForm />
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <a
