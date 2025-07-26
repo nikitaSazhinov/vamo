@@ -6,15 +6,15 @@ import { useState, useMemo } from 'react';
 
 const PreferencesContainer = styled(Box)(({ theme }) => ({
   width: '100%',
-  minHeight: '100vh',
+  height: '100vh',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
   alignItems: 'center',
   paddingTop: '20px',
-  paddingBottom: '60px', // Increased bottom padding to prevent cutoff
+  paddingBottom: '20px',
   position: 'relative',
-  overflow: 'visible',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -111,10 +111,9 @@ const SubTitle = styled(Typography)(({ theme }) => ({
 const SelectedPreferencesContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   maxWidth: '1200px',
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
   position: 'relative',
   zIndex: 3,
-  minHeight: '60px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -126,7 +125,6 @@ const SelectedTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   color: '#FFFFFF',
   textShadow: '2px 2px 6px rgba(0, 0, 0, 0.8)',
-  marginBottom: theme.spacing(1.5),
   textAlign: 'center',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   padding: theme.spacing(1, 2),
@@ -139,18 +137,33 @@ const SelectedTitle = styled(Typography)(({ theme }) => ({
   },
 }));
 
+const SelectedPreferencesHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(2),
+  width: '100%',
+  marginBottom: theme.spacing(1.5),
+  background: 'rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: '16px',
+  padding: theme.spacing(1.5, 2),
+  border: '2px solid rgba(255, 255, 255, 0.3)',
+  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+  '@media (max-width:600px)': {
+    gap: theme.spacing(1.5),
+    padding: theme.spacing(1.2, 1.5),
+  },
+}));
+
 const SelectedChipsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   justifyContent: 'center',
   gap: theme.spacing(1.2),
-  marginBottom: theme.spacing(3),
-  minHeight: '50px',
   width: '100%',
-  padding: theme.spacing(1),
   '@media (max-width:600px)': {
     gap: theme.spacing(0.8),
-    marginBottom: theme.spacing(2),
   },
 }));
 
@@ -158,63 +171,68 @@ const PreferenceChip = styled(Chip)<{
   isSelected: boolean;
   isInSelectedArea?: boolean;
 }>(({ theme, isSelected, isInSelectedArea }) => ({
-  fontSize: isInSelectedArea ? '0.9rem' : '1rem',
+  fontSize: isInSelectedArea ? '0.8rem' : '0.85rem',
   fontFamily: 'var(--font-inter), sans-serif',
   fontWeight: 600,
-  padding: isInSelectedArea ? '10px 16px' : '14px 20px',
-  margin: isInSelectedArea ? '4px' : '8px',
+  padding: isInSelectedArea ? '4px 10px' : '6px 12px',
+  margin: 0,
   height: 'auto',
-  borderRadius: '25px',
+  borderRadius: '18px',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
-  border: isSelected ? '3px solid #000000' : '2px solid #000000',
+  border: isSelected ? '2px solid #000000' : '2px solid #000000',
   position: 'relative',
   zIndex: 3,
   boxShadow: isSelected
-    ? '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.4)'
-    : '0 4px 0px #000000, 0 6px 15px rgba(0, 0, 0, 0.3)',
+    ? '0 3px 0px #000000, 0 5px 15px rgba(0, 0, 0, 0.4)'
+    : '0 2px 0px #000000, 0 3px 10px rgba(0, 0, 0, 0.3)',
   opacity: 1,
   transform: 'scale(1)',
-  minWidth: 'fit-content',
+  minWidth: 'auto',
+  maxWidth: 'none',
   whiteSpace: 'nowrap',
+  flexShrink: 0,
 
   '&:hover': {
-    transform: 'scale(1.05) translateY(-2px)',
-    boxShadow: '0 8px 0px #000000, 0 10px 30px rgba(0, 0, 0, 0.5)',
+    transform: 'scale(1.05) translateY(-1px)',
+    boxShadow: '0 4px 0px #000000, 0 6px 20px rgba(0, 0, 0, 0.5)',
   },
 
   '&:active': {
-    transform: 'scale(1.02) translateY(1px)',
-    boxShadow: '0 2px 0px #000000, 0 4px 10px rgba(0, 0, 0, 0.3)',
+    transform: 'scale(1.02)',
+    boxShadow: '0 1px 0px #000000, 0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 
   '@media (max-width:600px)': {
-    fontSize: isInSelectedArea ? '0.8rem' : '0.9rem',
-    padding: isInSelectedArea ? '8px 14px' : '12px 18px',
-    margin: isInSelectedArea ? '3px' : '6px',
+    fontSize: isInSelectedArea ? '0.75rem' : '0.8rem',
+    padding: isInSelectedArea ? '3px 8px' : '5px 10px',
   },
 }));
 
 const PreferencesGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: theme.spacing(2),
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-start',
+  alignItems: 'flex-start',
+  gap: theme.spacing(0.8),
   width: '100%',
   maxWidth: '1200px',
-  justifyItems: 'center',
   position: 'relative',
   zIndex: 3,
   marginBottom: theme.spacing(4),
-  padding: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+
   '@media (max-width:768px)': {
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: theme.spacing(1.5),
+    gap: theme.spacing(0.6),
     marginBottom: theme.spacing(3),
+    padding: theme.spacing(1),
+    justifyContent: 'flex-start',
   },
+
   '@media (max-width:480px)': {
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: theme.spacing(1.2),
+    gap: theme.spacing(0.5),
     marginBottom: theme.spacing(2),
+    padding: theme.spacing(0.5),
   },
 }));
 
@@ -244,8 +262,73 @@ const FloatingEmoji = styled(Box)<{ top: string; left: string; delay: string }>(
   })
 );
 
+const SmallGoButton = styled(Box)(({ theme }) => ({
+  fontSize: '0.9rem',
+  fontFamily: 'var(--font-inter), sans-serif',
+  fontWeight: 700,
+  padding: '10px 20px',
+  borderRadius: '15px',
+  background: 'linear-gradient(135deg, #FF1493 0%, #8A2BE2 100%)',
+  color: '#FFFFFF',
+  border: '3px solid #000000',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  boxShadow: '0 4px 0px #000000, 0 6px 20px rgba(0, 0, 0, 0.4)',
+  position: 'relative',
+  zIndex: 3,
+  textAlign: 'center',
+  minWidth: '70px',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.5)',
+  },
+  '&:active': {
+    transform: 'translateY(1px)',
+    boxShadow: '0 2px 0px #000000, 0 4px 12px rgba(0, 0, 0, 0.3)',
+  },
+  '@media (max-width:600px)': {
+    fontSize: '0.8rem',
+    padding: '8px 16px',
+    minWidth: '60px',
+  },
+}));
+
+const ScrollableContent = styled(Box)(({ theme }) => ({
+  flex: 1,
+  width: '100%',
+  maxHeight: 'calc(100vh - 40px)', // Account for padding
+  minHeight: 'calc(100vh - 40px)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  position: 'relative',
+  zIndex: 2,
+  paddingBottom: theme.spacing(4),
+  scrollBehavior: 'smooth',
+  '&::-webkit-scrollbar': {
+    width: '8px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '4px',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: '4px',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.5)',
+    },
+  },
+}));
+
 interface PreferencesSectionProps {
   onPreferencesSelected: (preferences: string[]) => void;
+  onGoButtonClick: (preferences: string[]) => void;
+  userLocation: { latitude: number; longitude: number } | null;
 }
 
 const allPreferences = [
@@ -309,6 +392,30 @@ const allPreferences = [
     color: '#228B22',
     category: 'active',
   },
+  {
+    label: '🏃‍♀️ Running & Jogging',
+    value: 'running',
+    color: '#FF4500',
+    category: 'active',
+  },
+  {
+    label: '🤸 Yoga & Pilates',
+    value: 'yoga',
+    color: '#98FB98',
+    category: 'active',
+  },
+  {
+    label: '🏂 Snowboarding',
+    value: 'snowboarding',
+    color: '#87CEEB',
+    category: 'active',
+  },
+  {
+    label: '🎯 Archery',
+    value: 'archery',
+    color: '#DAA520',
+    category: 'active',
+  },
 
   {
     label: '🎨 Artsy & Creative',
@@ -370,6 +477,24 @@ const allPreferences = [
     color: '#A0522D',
     category: 'creative',
   },
+  {
+    label: '📷 Photography Tours',
+    value: 'photography',
+    color: '#4169E1',
+    category: 'creative',
+  },
+  {
+    label: '🎪 Street Performances',
+    value: 'streetart',
+    color: '#FF1493',
+    category: 'creative',
+  },
+  {
+    label: '🖼️ Art Workshops',
+    value: 'artworkshops',
+    color: '#9370DB',
+    category: 'creative',
+  },
 
   {
     label: '🍕 Foodie Adventures',
@@ -411,6 +536,30 @@ const allPreferences = [
     label: '🍰 Baking Fun',
     value: 'baking',
     color: '#F0E68C',
+    category: 'food',
+  },
+  {
+    label: '🧀 Cheese Tasting',
+    value: 'cheese',
+    color: '#FFFF99',
+    category: 'food',
+  },
+  {
+    label: '🍺 Brewery Tours',
+    value: 'brewery',
+    color: '#DAA520',
+    category: 'food',
+  },
+  {
+    label: '🌮 International Cuisine',
+    value: 'international',
+    color: '#FF8C00',
+    category: 'food',
+  },
+  {
+    label: '☕ Coffee Culture',
+    value: 'coffee',
+    color: '#8B4513',
     category: 'food',
   },
 
@@ -468,6 +617,24 @@ const allPreferences = [
     color: '#FF1493',
     category: 'social',
   },
+  {
+    label: '🎳 Bowling',
+    value: 'bowling',
+    color: '#FF6347',
+    category: 'social',
+  },
+  {
+    label: '🕺 Dance Classes',
+    value: 'dancing',
+    color: '#FF1493',
+    category: 'social',
+  },
+  {
+    label: '🎮 Gaming Lounges',
+    value: 'gaminglounge',
+    color: '#4169E1',
+    category: 'social',
+  },
 
   {
     label: '🛋️ Lazy & Chill',
@@ -511,6 +678,24 @@ const allPreferences = [
     color: '#FFB6C1',
     category: 'relaxation',
   },
+  {
+    label: '🛁 Hot Springs',
+    value: 'hotsprings',
+    color: '#87CEEB',
+    category: 'relaxation',
+  },
+  {
+    label: '🌲 Forest Walks',
+    value: 'forestwalks',
+    color: '#228B22',
+    category: 'relaxation',
+  },
+  {
+    label: '🦋 Butterfly Gardens',
+    value: 'butterfly',
+    color: '#FFB6C1',
+    category: 'relaxation',
+  },
 
   {
     label: '🛍️ Shopping Spree',
@@ -542,10 +727,36 @@ const allPreferences = [
     color: '#32CD32',
     category: 'lifestyle',
   },
+  {
+    label: '🏪 Local Markets',
+    value: 'markets',
+    color: '#FF8C00',
+    category: 'lifestyle',
+  },
+  {
+    label: '🎪 Pop-up Events',
+    value: 'popups',
+    color: '#FF1493',
+    category: 'lifestyle',
+  },
+  {
+    label: '🏙️ City Exploration',
+    value: 'cityexplore',
+    color: '#4682B4',
+    category: 'lifestyle',
+  },
+  {
+    label: '🚇 Public Transport Tours',
+    value: 'transit',
+    color: '#708090',
+    category: 'lifestyle',
+  },
 ];
 
 export default function PreferencesSection({
   onPreferencesSelected,
+  onGoButtonClick,
+  userLocation,
 }: PreferencesSectionProps) {
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
 
@@ -555,7 +766,7 @@ export default function PreferencesSection({
       (p) => !selectedPreferences.includes(p.value)
     );
     const shuffled = [...unselected].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 15); // Show 15 options at a time
+    return shuffled.slice(0, 20); // Show 20 options at a time
   }, [selectedPreferences]);
 
   const selectedPreferenceObjects = useMemo(() => {
@@ -573,6 +784,12 @@ export default function PreferencesSection({
     onPreferencesSelected(newPreferences);
   };
 
+  const handleGoClick = () => {
+    if (selectedPreferences.length > 0 && userLocation) {
+      onGoButtonClick(selectedPreferences);
+    }
+  };
+
   const getChipStyle = (preference: any, isSelected: boolean) => ({
     background: isSelected ? preference.color : '#FFFFFF',
     color: isSelected ? '#FFFFFF' : '#000000',
@@ -582,6 +799,8 @@ export default function PreferencesSection({
       fontWeight: isSelected ? 700 : 600,
     },
   });
+
+  const canProceed = selectedPreferences.length > 0 && userLocation;
 
   return (
     <PreferencesContainer>
@@ -611,77 +830,173 @@ export default function PreferencesSection({
         maxWidth='xl'
         sx={{ position: 'relative', zIndex: 3, width: '100%' }}
       >
-        <Box
-          display='flex'
-          flexDirection='column'
-          alignItems='center'
-          justifyContent='flex-start'
-          textAlign='center'
-          sx={{ width: '100%', minHeight: 'auto' }}
+        <ScrollableContent
+          data-scrollable-content
+          className='preferences-scrollable'
+          data-testid='preferences-scroll-area'
+          onWheel={(e) => {
+            // Stop propagation to prevent main page scroll logic from interfering
+            e.stopPropagation();
+          }}
         >
-          <SectionTitle variant='h2'>
-            ✨ What's Your Vibe Today? ✨
-          </SectionTitle>
+          <Box
+            display='flex'
+            flexDirection='column'
+            alignItems='center'
+            justifyContent='flex-start'
+            textAlign='center'
+            sx={{ width: '100%', minHeight: 'auto' }}
+          >
+            <SectionTitle variant='h2'>
+              ✨ What's Your Vibe Today? ✨
+            </SectionTitle>
 
-          {/* Selected Preferences Section */}
-          {selectedPreferences.length > 0 && (
-            <SelectedPreferencesContainer>
-              <SelectedTitle>🎉 Your Selected Vibes</SelectedTitle>
-              <SelectedChipsContainer>
-                {selectedPreferenceObjects.map((preference) => (
+            {/* Selected Preferences Section */}
+            {selectedPreferences.length > 0 && (
+              <SelectedPreferencesContainer>
+                <SelectedPreferencesHeader>
+                  <SelectedTitle>🎉 Your Selected Vibes</SelectedTitle>
+                  <SmallGoButton
+                    onClick={handleGoClick}
+                    sx={{
+                      opacity: canProceed ? 1 : 0.5,
+                      cursor: canProceed ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    GO
+                  </SmallGoButton>
+                </SelectedPreferencesHeader>
+                <SelectedChipsContainer>
+                  {selectedPreferenceObjects.map((preference) => (
+                    <PreferenceChip
+                      key={preference.value}
+                      label={preference.label}
+                      onClick={() => handlePreferenceToggle(preference.value)}
+                      isSelected={true}
+                      isInSelectedArea={true}
+                      sx={getChipStyle(preference, true)}
+                    />
+                  ))}
+                </SelectedChipsContainer>
+              </SelectedPreferencesContainer>
+            )}
+
+            {/* Available Preferences Grid */}
+            <PreferencesGrid>
+              {displayedPreferences.map((preference) => {
+                const isSelected = selectedPreferences.includes(
+                  preference.value
+                );
+                return (
                   <PreferenceChip
                     key={preference.value}
                     label={preference.label}
                     onClick={() => handlePreferenceToggle(preference.value)}
-                    isSelected={true}
-                    isInSelectedArea={true}
-                    sx={getChipStyle(preference, true)}
+                    isSelected={isSelected}
+                    sx={getChipStyle(preference, isSelected)}
                   />
-                ))}
-              </SelectedChipsContainer>
-            </SelectedPreferencesContainer>
-          )}
+                );
+              })}
+            </PreferencesGrid>
 
-          {/* Available Preferences Grid */}
-          <PreferencesGrid>
-            {displayedPreferences.map((preference) => {
-              const isSelected = selectedPreferences.includes(preference.value);
-              return (
-                <PreferenceChip
-                  key={preference.value}
-                  label={preference.label}
-                  onClick={() => handlePreferenceToggle(preference.value)}
-                  isSelected={isSelected}
-                  sx={getChipStyle(preference, isSelected)}
-                />
-              );
-            })}
-          </PreferencesGrid>
+            {/* Remove the old GO button location */}
 
-          {selectedPreferences.length === 0 && (
-            <Box mt={4} mb={4}>
-              <Typography
-                variant='h6'
-                sx={{
-                  color: '#FFFFFF',
-                  fontFamily: 'var(--font-inter), sans-serif',
-                  fontWeight: 600,
-                  textShadow: '2px 2px 8px rgba(0, 0, 0, 0.9)',
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  padding: '12px 24px',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(10px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 6px 25px rgba(0, 0, 0, 0.5)',
-                  zIndex: 3,
-                  position: 'relative',
-                }}
-              >
-                👆 Start selecting activities that interest you!
-              </Typography>
-            </Box>
-          )}
-        </Box>
+            {selectedPreferences.length > 0 &&
+              selectedPreferences.length < 3 && (
+                <Box mt={4} mb={4}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      color: '#FFFFFF',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontWeight: 600,
+                      textShadow: '2px 2px 8px rgba(0, 0, 0, 0.9)',
+                      background:
+                        'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+                      padding: '16px 28px',
+                      borderRadius: '20px',
+                      backdropFilter: 'blur(10px)',
+                      border: '3px solid #000000',
+                      boxShadow:
+                        '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.5)',
+                      zIndex: 3,
+                      position: 'relative',
+                      textAlign: 'center',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    🌟 Great start! Add a few more to get personalized
+                    recommendations
+                    <br />✨ <strong>Mix it up:</strong> Try different
+                    categories for variety!
+                  </Typography>
+                </Box>
+              )}
+
+            {selectedPreferences.length >= 3 &&
+              selectedPreferences.length < 6 && (
+                <Box mt={4} mb={4}>
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      color: '#000000',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontWeight: 600,
+                      textShadow: '2px 2px 8px rgba(0, 0, 0, 0.9)',
+                      background:
+                        'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
+                      padding: '16px 28px',
+                      borderRadius: '20px',
+                      backdropFilter: 'blur(10px)',
+                      border: '3px solid #000000',
+                      boxShadow:
+                        '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.5)',
+                      zIndex: 3,
+                      position: 'relative',
+                      textAlign: 'center',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    🎉 Perfect! You'll get amazing personalized suggestions
+                    <br />
+                    🚀 <strong>Ready to discover?</strong> Click the button
+                    below!
+                  </Typography>
+                </Box>
+              )}
+
+            {selectedPreferences.length >= 6 && (
+              <Box mt={4} mb={4}>
+                <Typography
+                  variant='h6'
+                  sx={{
+                    color: '#FFFFFF',
+                    fontFamily: 'var(--font-inter), sans-serif',
+                    fontWeight: 600,
+                    textShadow: '2px 2px 8px rgba(0, 0, 0, 0.9)',
+                    background:
+                      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    padding: '16px 28px',
+                    borderRadius: '20px',
+                    backdropFilter: 'blur(10px)',
+                    border: '3px solid #000000',
+                    boxShadow:
+                      '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.5)',
+                    zIndex: 3,
+                    position: 'relative',
+                    textAlign: 'center',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  🔥 Wow! You're adventurous - we love that!
+                  <br />
+                  🎯 <strong>Ultra-personalized:</strong> Hit that GO button for
+                  the most tailored recommendations!
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </ScrollableContent>
       </Container>
     </PreferencesContainer>
   );

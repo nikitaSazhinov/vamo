@@ -24,7 +24,9 @@ function HomeContent() {
   const [response, setResponse] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [weatherPreference, setWeatherPreference] = useState<'indoor' | 'outdoor' | null>(null);
+  const [weatherPreference, setWeatherPreference] = useState<
+    'indoor' | 'outdoor' | null
+  >(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<HTMLDivElement>(null);
@@ -77,12 +79,24 @@ function HomeContent() {
       const target = event.target as HTMLElement;
       const isInsideScrollableContent =
         target.closest('[data-scrollable-content]') ||
+        target.closest('.preferences-scrollable') ||
+        target.closest('[data-testid="preferences-scroll-area"]') ||
         target.closest('.MuiPaper-root') ||
         target.closest('[role="dialog"]');
 
       // If we're inside a scrollable content area, don't prevent default
       if (isInsideScrollableContent) {
         return;
+      }
+
+      // Additional check: if we're in section 2 (preferences), allow some scrolling
+      if (currentSection === 2) {
+        const preferencesSection =
+          target.closest('[class*="preferences"]') ||
+          target.closest('[data-scrollable-content]');
+        if (preferencesSection) {
+          return;
+        }
       }
 
       event.preventDefault();
@@ -243,12 +257,19 @@ function HomeContent() {
     scrollToSectionByIndex(2);
   };
 
-  const handlePreferencesSelected = async (preferences: string[]) => {
+  const handlePreferencesSelected = (preferences: string[]) => {
     setUserPreferences(preferences);
+    // Just store preferences, don't auto-call API
+  };
 
+  const handleGoButtonClick = async (preferences: string[]) => {
     // Call the API when we have location, preferences, and weather preference
     if (userLocation && preferences.length > 0 && weatherPreference) {
-      await callRecommendationsAPI(userLocation, preferences, weatherPreference);
+      await callRecommendationsAPI(
+        userLocation,
+        preferences,
+        weatherPreference
+      );
     }
   };
 
@@ -256,11 +277,8 @@ function HomeContent() {
     setWeatherPreference(preference);
     // Automatically move to the next section after selection
     scrollToSectionByIndex(3);
-    
-    // Call the API if we already have location and preferences
-    if (userLocation && userPreferences.length > 0) {
-      callRecommendationsAPI(userLocation, userPreferences, preference);
-    }
+
+    // Don't automatically call API - let user use GO button for control
   };
 
   const callRecommendationsAPI = async (
@@ -340,9 +358,9 @@ Note: Provide recommendations that are actually available in the specific area w
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           prompt,
-          coordinates: location 
+          coordinates: location,
         }),
       });
 
@@ -456,8 +474,8 @@ Note: Provide recommendations that are actually available in the specific area w
             height: '100vh',
           }}
         >
-          <WeatherSection 
-            coordinates={userLocation} 
+          <WeatherSection
+            coordinates={userLocation}
             onPreferenceSelected={handleWeatherPreference}
           />
         </Box>
@@ -473,6 +491,8 @@ Note: Provide recommendations that are actually available in the specific area w
         >
           <PreferencesSection
             onPreferencesSelected={handlePreferencesSelected}
+            onGoButtonClick={handleGoButtonClick}
+            userLocation={userLocation}
           />
         </Box>
 
