@@ -13,8 +13,7 @@ export default function Home() {
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const locationRef = useRef<HTMLDivElement>(null);
-  const preferencesRef = useRef<HTMLDivElement>(null);
+  const sectionsRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -27,17 +26,17 @@ export default function Home() {
       setIsScrolling(true);
       setCurrentSection(index);
 
-      const container = containerRef.current;
-      if (container) {
-        container.scrollTo({
-          top: index * window.innerHeight,
-          behavior: 'smooth',
-        });
+      const sectionsContainer = sectionsRef.current;
+      if (sectionsContainer) {
+        // Use transform instead of scrollTo for smoother animation
+        const translateY = -(index * 100);
+        sectionsContainer.style.transform = `translateY(${translateY}vh)`;
+        sectionsContainer.style.transition = 'transform 0.8s ease-in-out';
 
         // Reset scrolling state after animation completes
         setTimeout(() => {
           setIsScrolling(false);
-        }, 1000);
+        }, 800); // Match the CSS transition duration
       }
     },
     [isScrolling, totalSections]
@@ -48,6 +47,7 @@ export default function Home() {
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
+      // Block scroll events while transitioning
       if (isScrolling) return;
 
       // Clear any existing timeout
@@ -55,7 +55,7 @@ export default function Home() {
         clearTimeout(scrollTimeout.current);
       }
 
-      // Debounce scroll events
+      // Set a debounce to prevent rapid scrolling
       scrollTimeout.current = setTimeout(() => {
         const delta = event.deltaY;
 
@@ -70,7 +70,7 @@ export default function Home() {
             scrollToSectionByIndex(currentSection - 1);
           }
         }
-      }, 50);
+      }, 100); // Debounce for smoother experience
     };
 
     const container = containerRef.current;
@@ -190,48 +190,11 @@ export default function Home() {
         overflow: 'hidden',
         position: 'relative',
         '&::-webkit-scrollbar': {
-          display: 'none', // Hide scrollbar since we're controlling scroll
+          display: 'none',
         },
-        scrollbarWidth: 'none', // Hide scrollbar for Firefox
+        scrollbarWidth: 'none',
       }}
     >
-      {/* Navigation Dots Indicator */}
-      <Box
-        sx={{
-          position: 'fixed',
-          right: '30px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-        }}
-      >
-        {Array.from({ length: totalSections }).map((_, index) => (
-          <Box
-            key={index}
-            onClick={() => scrollToSectionByIndex(index)}
-            sx={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              background:
-                currentSection === index
-                  ? 'linear-gradient(45deg, #FF1493, #00FFFF)'
-                  : 'rgba(255, 255, 255, 0.4)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              border: '2px solid rgba(255, 255, 255, 0.6)',
-              '&:hover': {
-                transform: 'scale(1.2)',
-                background: 'linear-gradient(45deg, #FF1493, #00FFFF)',
-              },
-            }}
-          />
-        ))}
-      </Box>
-
       {/* Section Indicator Text */}
       <Box
         sx={{
@@ -243,53 +206,65 @@ export default function Home() {
           fontFamily: 'var(--font-inter), sans-serif',
           fontSize: '0.9rem',
           fontWeight: 600,
-          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+          textShadow: '2px 2px 8px rgba(0, 0, 0, 0.9)',
           background: 'rgba(0, 0, 0, 0.4)',
           padding: '8px 16px',
           borderRadius: '15px',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
         }}
       >
         {currentSection + 1} / {totalSections}
       </Box>
 
-      {/* Hero Section */}
+      {/* Sections Container with Transform Animation */}
       <Box
+        ref={sectionsRef}
         sx={{
-          position: 'absolute',
-          top: '0vh',
           width: '100%',
-          height: '100vh',
+          height: `${totalSections * 100}vh`,
+          position: 'relative',
+          transition: 'transform 0.8s ease-in-out',
         }}
       >
-        <HeroSection onGetStarted={handleGetStarted} />
-      </Box>
+        {/* Hero Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '0vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <HeroSection onGetStarted={handleGetStarted} />
+        </Box>
 
-      {/* Location Section */}
-      <Box
-        ref={locationRef}
-        sx={{
-          position: 'absolute',
-          top: '100vh',
-          width: '100%',
-          height: '100vh',
-        }}
-      >
-        <LocationSection onConfirmLocation={handleConfirmLocation} />
-      </Box>
+        {/* Location Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '100vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <LocationSection onConfirmLocation={handleConfirmLocation} />
+        </Box>
 
-      {/* Preferences Section */}
-      <Box
-        ref={preferencesRef}
-        sx={{
-          position: 'absolute',
-          top: '200vh',
-          width: '100%',
-          height: '100vh',
-        }}
-      >
-        <PreferencesSection onPreferencesSelected={handlePreferencesSelected} />
+        {/* Preferences Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '200vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <PreferencesSection
+            onPreferencesSelected={handlePreferencesSelected}
+          />
+        </Box>
       </Box>
     </Box>
   );
