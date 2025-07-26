@@ -6,29 +6,35 @@ import { Box } from '@mui/material';
 import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
+import ResponseSection from '../components/ResponseSection';
+import WeatherSection from '../components/WeatherSection';
 
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
   const [response, setResponse] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [weatherPreference, setWeatherPreference] = useState<'indoor' | 'outdoor' | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const preferencesRef = useRef<HTMLDivElement>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const totalSections = 3;
+  const totalSections = 5;
 
   const scrollToSectionByIndex = useCallback(
     (index: number) => {
@@ -246,6 +252,12 @@ function HomeContent() {
     }
   };
 
+  const handleWeatherPreference = (preference: 'indoor' | 'outdoor') => {
+    setWeatherPreference(preference);
+    // Automatically move to the next section after selection
+    scrollToSectionByIndex(3);
+  };
+
   const callRecommendationsAPI = async (
     location: { latitude: number; longitude: number },
     preferences: string[]
@@ -426,7 +438,7 @@ Note: Provide recommendations that are actually available in the specific area w
           <LocationSection onConfirmLocation={handleConfirmLocation} />
         </Box>
 
-        {/* Preferences Section */}
+        {/* Weather Section */}
         <Box
           sx={{
             position: 'absolute',
@@ -435,8 +447,40 @@ Note: Provide recommendations that are actually available in the specific area w
             height: '100vh',
           }}
         >
+          <WeatherSection 
+            coordinates={userLocation} 
+            onPreferenceSelected={handleWeatherPreference}
+          />
+        </Box>
+
+        {/* Preferences Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '300vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
           <PreferencesSection
             onPreferencesSelected={handlePreferencesSelected}
+          />
+        </Box>
+
+        {/* Response Section */}
+        <Box
+          ref={responseRef}
+          sx={{
+            position: 'absolute',
+            top: '400vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <ResponseSection
+            response={response}
+            loading={loading}
+            error={error}
           />
         </Box>
       </Box>
