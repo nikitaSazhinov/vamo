@@ -1,103 +1,296 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Box } from '@mui/material';
+import HeroSection from '../components/HeroSection';
+import LocationSection from '../components/LocationSection';
+import PreferencesSection from '../components/PreferencesSection';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [userLocation, setUserLocation] = useState<string>('');
+  const [userPreferences, setUserPreferences] = useState<string[]>([]);
+  const [currentSection, setCurrentSection] = useState<number>(0);
+  const [isScrolling, setIsScrolling] = useState<boolean>(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  const containerRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
+  const preferencesRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number>(0);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const totalSections = 3;
+
+  const scrollToSectionByIndex = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= totalSections || isScrolling) return;
+
+      setIsScrolling(true);
+      setCurrentSection(index);
+
+      const container = containerRef.current;
+      if (container) {
+        container.scrollTo({
+          top: index * window.innerHeight,
+          behavior: 'smooth',
+        });
+
+        // Reset scrolling state after animation completes
+        setTimeout(() => {
+          setIsScrolling(false);
+        }, 1000);
+      }
+    },
+    [isScrolling, totalSections]
+  );
+
+  // Handle wheel scroll events
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+
+      if (isScrolling) return;
+
+      // Clear any existing timeout
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+
+      // Debounce scroll events
+      scrollTimeout.current = setTimeout(() => {
+        const delta = event.deltaY;
+
+        if (delta > 0) {
+          // Scrolling down
+          if (currentSection < totalSections - 1) {
+            scrollToSectionByIndex(currentSection + 1);
+          }
+        } else {
+          // Scrolling up
+          if (currentSection > 0) {
+            scrollToSectionByIndex(currentSection - 1);
+          }
+        }
+      }, 50);
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('wheel', handleWheel, { passive: false });
+
+      return () => {
+        container.removeEventListener('wheel', handleWheel);
+        if (scrollTimeout.current) {
+          clearTimeout(scrollTimeout.current);
+        }
+      };
+    }
+  }, [currentSection, isScrolling, scrollToSectionByIndex]);
+
+  // Handle touch events for mobile
+  useEffect(() => {
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartY.current = event.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (isScrolling) return;
+
+      const touchEndY = event.changedTouches[0].clientY;
+      const deltaY = touchStartY.current - touchEndY;
+      const threshold = 50; // Minimum swipe distance
+
+      if (Math.abs(deltaY) > threshold) {
+        if (deltaY > 0) {
+          // Swiping up (next section)
+          if (currentSection < totalSections - 1) {
+            scrollToSectionByIndex(currentSection + 1);
+          }
+        } else {
+          // Swiping down (previous section)
+          if (currentSection > 0) {
+            scrollToSectionByIndex(currentSection - 1);
+          }
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('touchstart', handleTouchStart, {
+        passive: false,
+      });
+      container.addEventListener('touchend', handleTouchEnd, {
+        passive: false,
+      });
+
+      return () => {
+        container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [currentSection, isScrolling, scrollToSectionByIndex]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isScrolling) return;
+
+      switch (event.key) {
+        case 'ArrowDown':
+        case ' ': // Space bar
+          event.preventDefault();
+          if (currentSection < totalSections - 1) {
+            scrollToSectionByIndex(currentSection + 1);
+          }
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          if (currentSection > 0) {
+            scrollToSectionByIndex(currentSection - 1);
+          }
+          break;
+        case 'Home':
+          event.preventDefault();
+          scrollToSectionByIndex(0);
+          break;
+        case 'End':
+          event.preventDefault();
+          scrollToSectionByIndex(totalSections - 1);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSection, isScrolling, scrollToSectionByIndex, totalSections]);
+
+  const handleGetStarted = () => {
+    scrollToSectionByIndex(1);
+  };
+
+  const handleConfirmLocation = () => {
+    setUserLocation('confirmed');
+    scrollToSectionByIndex(2);
+  };
+
+  const handlePreferencesSelected = (preferences: string[]) => {
+    setUserPreferences(preferences);
+    console.log('User Data:', {
+      location: userLocation,
+      preferences: preferences,
+    });
+  };
+
+  return (
+    <Box
+      ref={containerRef}
+      sx={{
+        width: '100%',
+        height: '100vh',
+        overflow: 'hidden',
+        position: 'relative',
+        '&::-webkit-scrollbar': {
+          display: 'none', // Hide scrollbar since we're controlling scroll
+        },
+        scrollbarWidth: 'none', // Hide scrollbar for Firefox
+      }}
+    >
+      {/* Navigation Dots Indicator */}
+      <Box
+        sx={{
+          position: 'fixed',
+          right: '30px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        {Array.from({ length: totalSections }).map((_, index) => (
+          <Box
+            key={index}
+            onClick={() => scrollToSectionByIndex(index)}
+            sx={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background:
+                currentSection === index
+                  ? 'linear-gradient(45deg, #FF1493, #00FFFF)'
+                  : 'rgba(255, 255, 255, 0.4)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              border: '2px solid rgba(255, 255, 255, 0.6)',
+              '&:hover': {
+                transform: 'scale(1.2)',
+                background: 'linear-gradient(45deg, #FF1493, #00FFFF)',
+              },
+            }}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        ))}
+      </Box>
+
+      {/* Section Indicator Text */}
+      <Box
+        sx={{
+          position: 'fixed',
+          left: '30px',
+          bottom: '30px',
+          zIndex: 1000,
+          color: '#FFFFFF',
+          fontFamily: 'var(--font-inter), sans-serif',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+          background: 'rgba(0, 0, 0, 0.4)',
+          padding: '8px 16px',
+          borderRadius: '15px',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+        }}
+      >
+        {currentSection + 1} / {totalSections}
+      </Box>
+
+      {/* Hero Section */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '0vh',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <HeroSection onGetStarted={handleGetStarted} />
+      </Box>
+
+      {/* Location Section */}
+      <Box
+        ref={locationRef}
+        sx={{
+          position: 'absolute',
+          top: '100vh',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <LocationSection onConfirmLocation={handleConfirmLocation} />
+      </Box>
+
+      {/* Preferences Section */}
+      <Box
+        ref={preferencesRef}
+        sx={{
+          position: 'absolute',
+          top: '200vh',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <PreferencesSection onPreferencesSelected={handlePreferencesSelected} />
+      </Box>
+    </Box>
   );
 }
