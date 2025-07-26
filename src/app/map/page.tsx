@@ -1,7 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Map from '@/components/Map'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the Map component with no SSR
+const Map = dynamic(() => import('@/components/Map'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <p>Loading map...</p>
+    </div>
+  )
+})
 
 export default function MapPage() {
   const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number; } | null>(null)
@@ -49,5 +59,5 @@ export default function MapPage() {
         isLoading={isLoading}
       />
     </main>
-  );
+  )
 }

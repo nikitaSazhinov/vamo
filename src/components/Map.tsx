@@ -4,6 +4,9 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
+// Prevent Leaflet undefined window errors
+const DEFAULT_CENTER: [number, number] = [51.505, -0.09]
+
 // Custom mushroom marker
 const icon = L.icon({
   iconUrl: '/marker.png',
@@ -31,7 +34,7 @@ function SetViewOnCoordinates({ coords }: { coords: [number, number] }) {
 const MapView = ({ coordinates, isLoading }: MapViewProps) => {
   const position: [number, number] = coordinates 
     ? [coordinates.latitude, coordinates.longitude]
-    : [51.505, -0.09]
+    : DEFAULT_CENTER
 
   return (
     <div className="w-full h-full relative">
@@ -42,13 +45,14 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
       )}
 
       <MapContainer
+        key={`${position[0]}-${position[1]}`} // Force remount on position change
         center={position}
         zoom={14}
         className="w-full h-full"
       >
         <TileLayer
-          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
-          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+          attribution='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+          url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
         />
 
         {coordinates && (
