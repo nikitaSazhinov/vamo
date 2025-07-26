@@ -6,29 +6,37 @@ import { Box } from '@mui/material';
 import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
+import ResponseSection from '../components/ResponseSection';
+import WeatherSection from '../components/WeatherSection';
 
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
   const [response, setResponse] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [weatherPreference, setWeatherPreference] = useState<
+    'indoor' | 'outdoor' | null
+  >(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const preferencesRef = useRef<HTMLDivElement>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const totalSections = 3;
+  const totalSections = 5;
 
   const scrollToSectionByIndex = useCallback(
     (index: number) => {
@@ -255,14 +263,28 @@ function HomeContent() {
   };
 
   const handleGoButtonClick = async (preferences: string[]) => {
-    if (userLocation && preferences.length > 0) {
-      await callRecommendationsAPI(userLocation, preferences);
+    // Call the API when we have location, preferences, and weather preference
+    if (userLocation && preferences.length > 0 && weatherPreference) {
+      await callRecommendationsAPI(
+        userLocation,
+        preferences,
+        weatherPreference
+      );
     }
+  };
+
+  const handleWeatherPreference = (preference: 'indoor' | 'outdoor') => {
+    setWeatherPreference(preference);
+    // Automatically move to the next section after selection
+    scrollToSectionByIndex(3);
+
+    // Don't automatically call API - let user use GO button for control
   };
 
   const callRecommendationsAPI = async (
     location: { latitude: number; longitude: number },
-    preferences: string[]
+    preferences: string[],
+    weatherPreference: 'indoor' | 'outdoor'
   ) => {
     setLoading(true);
     setError('');
@@ -271,8 +293,20 @@ function HomeContent() {
     // Navigate to recommendations page with loading state
     router.push('/recommendations?loading=true');
 
-    // Create the prompt with location and preferences - modified to only give content about places
-    let prompt = `Provide specific recommendations for places to visit within 5km of coordinates ${location.latitude}, ${location.longitude}.`;
+    // Create the prompt with location, preferences, and weather preference
+    let prompt = `Provide specific recommendations for places to visit within 5km of your current location.
+
+Please structure your response with:
+## Main Categories
+- Use **bold text** for place names and key features
+- Use bullet points (*) for lists of places
+- Separate different categories with clear headers
+- Include brief descriptions for each recommendation
+
+Format your response to be visually appealing and easy to read.`;
+
+    // Add weather preference context
+    prompt += ` The user prefers ${weatherPreference} activities.`;
 
     if (preferences.length > 0) {
       const preferenceLabels = preferences.map((pref) => {
@@ -304,7 +338,19 @@ function HomeContent() {
       }
     }
 
-    prompt += ` List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.`;
+    prompt += ` 
+
+List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.
+
+Example format:
+## Food & Dining
+* **Café Central** - 123 Main St - Cozy coffee shop with great pastries
+* **Pizza Palace** - 456 Oak Ave - Authentic Italian pizza
+
+## Entertainment
+* **Movie Theater** - 789 Pine St - Latest blockbusters in comfortable seats
+
+Note: Provide recommendations that are actually available in the specific area where the user is located.`;
 
     try {
       const res = await fetch('/api/mistral', {
@@ -312,7 +358,10 @@ function HomeContent() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          coordinates: location,
+        }),
       });
 
       const data = await res.json();
@@ -416,7 +465,7 @@ function HomeContent() {
           <LocationSection onConfirmLocation={handleConfirmLocation} />
         </Box>
 
-        {/* Preferences Section */}
+        {/* Weather Section */}
         <Box
           sx={{
             position: 'absolute',
@@ -425,10 +474,42 @@ function HomeContent() {
             height: '100vh',
           }}
         >
+          <WeatherSection
+            coordinates={userLocation}
+            onPreferenceSelected={handleWeatherPreference}
+          />
+        </Box>
+
+        {/* Preferences Section */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '300vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
           <PreferencesSection
             onPreferencesSelected={handlePreferencesSelected}
             onGoButtonClick={handleGoButtonClick}
             userLocation={userLocation}
+          />
+        </Box>
+
+        {/* Response Section */}
+        <Box
+          ref={responseRef}
+          sx={{
+            position: 'absolute',
+            top: '400vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <ResponseSection
+            response={response}
+            loading={loading}
+            error={error}
           />
         </Box>
       </Box>

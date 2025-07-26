@@ -3,6 +3,15 @@
 import { useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+
+// Fix Leaflet default icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: '/marker-icon.png',
+  iconUrl: '/marker-icon.png',
+  shadowUrl: null,
+})
 
 // Prevent Leaflet undefined window errors
 const DEFAULT_CENTER: [number, number] = [51.505, -0.09]
@@ -67,7 +76,7 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
 
             <Circle
               center={position}
-              radius={1000}
+              radius={500}
               pathOptions={{
                 color: '#FF69B4',
                 fillColor: '#FF69B4',

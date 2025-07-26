@@ -2,6 +2,7 @@
 
 import { Box, Typography, Container, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 
 const ResponseContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -98,7 +99,6 @@ const ResponseText = styled(Typography)(({ theme }) => ({
   fontWeight: 400,
   lineHeight: 1.6,
   color: '#333333',
-  whiteSpace: 'pre-wrap',
   '& h1, & h2, & h3, & h4, & h5, & h6': {
     color: '#FF1493',
     fontWeight: 600,
@@ -114,6 +114,39 @@ const ResponseText = styled(Typography)(({ theme }) => ({
   },
   '& li': {
     marginBottom: theme.spacing(0.5),
+  },
+  '& p': {
+    marginBottom: theme.spacing(1.5),
+  },
+  '& a': {
+    color: '#FF1493',
+    textDecoration: 'none',
+    fontWeight: 600,
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  '& blockquote': {
+    borderLeft: '4px solid #00FFFF',
+    paddingLeft: theme.spacing(2),
+    margin: theme.spacing(2, 0),
+    fontStyle: 'italic',
+    background: 'rgba(0, 255, 255, 0.1)',
+    padding: theme.spacing(2),
+    borderRadius: '8px',
+  },
+  '& code': {
+    background: 'rgba(255, 20, 147, 0.1)',
+    padding: theme.spacing(0.5, 1),
+    borderRadius: '4px',
+    fontFamily: 'monospace',
+  },
+  '& pre': {
+    background: 'rgba(0, 0, 0, 0.05)',
+    padding: theme.spacing(2),
+    borderRadius: '8px',
+    overflow: 'auto',
+    margin: theme.spacing(2, 0),
   },
   '@media (max-width:600px)': {
     fontSize: '1rem',
@@ -183,7 +216,9 @@ export default function ResponseSection({ response, loading, error }: ResponseSe
       {response && !loading && !error && (
         <ResponseContent onWheel={handleContentScroll} data-scrollable-content>
           <ResponseText>
-            {response}
+            <Markdown>
+              {response}
+            </Markdown>
           </ResponseText>
         </ResponseContent>
       )}
