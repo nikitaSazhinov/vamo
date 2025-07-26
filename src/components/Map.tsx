@@ -4,12 +4,15 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
-// Custom marker icon
+// Prevent Leaflet undefined window errors
+const DEFAULT_CENTER: [number, number] = [51.505, -0.09]
+
+// Custom mushroom marker
 const icon = L.icon({
-  iconUrl: '/globe.svg', // Using the globe icon from your public folder
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
+  iconUrl: '/marker.png',
+  iconSize: [45, 45],     // Adjusted size for the actual image
+  iconAnchor: [22, 45],   // Bottom center of the icon
+  popupAnchor: [0, -45]   // Top center of the icon
 })
 
 interface MapViewProps {
@@ -31,7 +34,7 @@ function SetViewOnCoordinates({ coords }: { coords: [number, number] }) {
 const MapView = ({ coordinates, isLoading }: MapViewProps) => {
   const position: [number, number] = coordinates 
     ? [coordinates.latitude, coordinates.longitude]
-    : [51.505, -0.09]
+    : DEFAULT_CENTER
 
   return (
     <div className="w-full h-full relative">
@@ -42,14 +45,14 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
       )}
 
       <MapContainer
+        key={`${position[0]}-${position[1]}`} // Force remount on position change
         center={position}
         zoom={14}
         className="w-full h-full"
       >
-        {/* Cartographic style from Stadia Maps - more modern look */}
         <TileLayer
-          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
-          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+          attribution='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+          url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
         />
 
         {coordinates && (
@@ -59,14 +62,15 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
             <Marker 
               position={position}
               icon={icon}
-            />
+            >
+            </Marker>
 
             <Circle
               center={position}
               radius={1000}
               pathOptions={{
-                color: '#6366f1',
-                fillColor: '#6366f1',
+                color: '#FF69B4',
+                fillColor: '#FF69B4',
                 fillOpacity: 0.15,
                 weight: 2
               }}
