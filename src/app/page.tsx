@@ -243,7 +243,16 @@ export default function Home() {
     setResponse('');
 
     // Create the prompt with location and preferences - modified to only give content about places
-    let prompt = `Provide specific recommendations for places to visit within 5km of coordinates ${location.latitude}, ${location.longitude}.`;
+    let prompt = `Provide specific recommendations for places to visit within 5km of your current location.
+
+Please structure your response with:
+## Main Categories
+- Use **bold text** for place names and key features
+- Use bullet points (*) for lists of places
+- Separate different categories with clear headers
+- Include brief descriptions for each recommendation
+
+Format your response to be visually appealing and easy to read.`;
 
     if (preferences.length > 0) {
       const preferenceLabels = preferences.map((pref) => {
@@ -275,7 +284,19 @@ export default function Home() {
       }
     }
 
-    prompt += ` List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.`;
+    prompt += ` 
+
+List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.
+
+Example format:
+## Food & Dining
+* **Café Central** - 123 Main St - Cozy coffee shop with great pastries
+* **Pizza Palace** - 456 Oak Ave - Authentic Italian pizza
+
+## Entertainment
+* **Movie Theater** - 789 Pine St - Latest blockbusters in comfortable seats
+
+Note: Provide recommendations that are actually available in the specific area where the user is located.`;
 
     try {
       const res = await fetch('/api/mistral', {
@@ -283,7 +304,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ 
+          prompt,
+          coordinates: location 
+        }),
       });
 
       const data = await res.json();
