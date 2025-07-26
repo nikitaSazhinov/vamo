@@ -99,6 +99,7 @@ interface WeatherSectionProps {
     latitude: number;
     longitude: number;
   } | null;
+  onPreferenceSelected?: (preference: 'indoor' | 'outdoor') => void;
 }
 
 const getWeatherIcon = (code: number) => {
@@ -119,11 +120,16 @@ const getWeatherDescription = (code: number): string => {
   return 'Unknown';
 };
 
-export default function WeatherSection({ coordinates }: WeatherSectionProps) {
+export default function WeatherSection({ coordinates, onPreferenceSelected }: WeatherSectionProps) {
   const [weather, setWeather] = useState<{ temperature: number; weatherCode: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preference, setPreference] = useState<'indoor' | 'outdoor' | null>(null);
+
+  const handlePreferenceClick = (pref: 'indoor' | 'outdoor') => {
+    setPreference(pref);
+    onPreferenceSelected?.(pref);
+  };
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -187,6 +193,9 @@ export default function WeatherSection({ coordinates }: WeatherSectionProps) {
               borderRadius: '20px',
               border: '4px solid #000000',
               boxShadow: '0 8px 0px #333333',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
             }}
           >
             🌈 Today's Weather
@@ -199,60 +208,78 @@ export default function WeatherSection({ coordinates }: WeatherSectionProps) {
               <Typography variant="h6" sx={{ color: '#FF6B6B' }}>{error}</Typography>
             ) : weather ? (
               <>
-                {getWeatherIcon(weather.weatherCode)}
                 <Typography 
-                  variant="h3" 
+                  variant="h2" 
                   sx={{ 
                     color: '#FF69B4',
                     fontWeight: 700,
-                    marginTop: 2,
+                    fontFamily: 'var(--font-inter), sans-serif',
+                    marginBottom: 1,
                     textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
                   }}
                 >
                   {weather.temperature}°C
                 </Typography>
+                {getWeatherIcon(weather.weatherCode)}
                 <Typography 
-                  variant="h4" 
                   sx={{ 
                     color: 'white',
-                    marginTop: 1,
+                    fontSize: '1.2rem',
+                    fontFamily: 'var(--font-inter), sans-serif',
                     marginBottom: 4,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+                    opacity: 0.9,
                   }}
                 >
-                  Today is {getWeatherDescription(weather.weatherCode)}
+                  Today will be {getWeatherDescription(weather.weatherCode)}
                 </Typography>
 
                 <Typography 
-                  variant="h5" 
                   sx={{ 
                     color: 'white',
+                    fontSize: '1.1rem',
+                    fontFamily: 'var(--font-inter), sans-serif',
                     marginBottom: 2,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+                    opacity: 0.8,
                   }}
                 >
                   Where would you like to go?
                 </Typography>
 
-                <ButtonGroup variant="contained" size="large">
-                  <LocationButton
-                    onClick={() => setPreference('indoor')}
+                <ButtonGroup 
+                  variant="contained" 
+                  size="large"
+                  sx={{
+                    '& .MuiButton-root': {
+                      background: '#FF69B4',
+                      border: 'none',
+                      '&:hover': {
+                        background: '#FF1493',
+                      }
+                    }
+                  }}
+                >
+                  <Button
+                    onClick={() => handlePreferenceClick('indoor')}
                     sx={{
-                      background: preference === 'indoor' ? '#4CAF50' : '#FFFFFF',
-                      color: preference === 'indoor' ? '#FFFFFF' : '#000000',
+                      background: preference === 'indoor' ? '#FF1493 !important' : undefined,
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontSize: '1rem',
+                      px: 4,
                     }}
                   >
-                    <HomeIcon /> Indoors
-                  </LocationButton>
-                  <LocationButton
-                    onClick={() => setPreference('outdoor')}
+                    🏠 Indoors
+                  </Button>
+                  <Button
+                    onClick={() => handlePreferenceClick('outdoor')}
                     sx={{
-                      background: preference === 'outdoor' ? '#4CAF50' : '#FFFFFF',
-                      color: preference === 'outdoor' ? '#FFFFFF' : '#000000',
+                      background: preference === 'outdoor' ? '#FF1493 !important' : undefined,
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontSize: '1rem',
+                      px: 4,
                     }}
                   >
-                    <ParkIcon /> Outdoors
-                  </LocationButton>
+                    🌲 Outdoors
+                  </Button>
                 </ButtonGroup>
               </>
             ) : null}

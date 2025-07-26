@@ -19,6 +19,7 @@ export default function Home() {
   const [response, setResponse] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [weatherPreference, setWeatherPreference] = useState<'indoor' | 'outdoor' | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<HTMLDivElement>(null);
@@ -235,6 +236,12 @@ export default function Home() {
     }
   };
 
+  const handleWeatherPreference = (preference: 'indoor' | 'outdoor') => {
+    setWeatherPreference(preference);
+    // Automatically move to the next section after selection
+    scrollToSectionByIndex(3);
+  };
+
   const callRecommendationsAPI = async (
     location: { latitude: number; longitude: number },
     preferences: string[]
@@ -393,7 +400,10 @@ export default function Home() {
             height: '100vh',
           }}
         >
-          <WeatherSection coordinates={userLocation} />
+          <WeatherSection 
+            coordinates={userLocation} 
+            onPreferenceSelected={handleWeatherPreference}
+          />
         </Box>
 
         {/* Preferences Section */}
