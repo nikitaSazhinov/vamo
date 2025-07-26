@@ -20,8 +20,9 @@ export default function Home() {
   const [error, setError] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
-  // const locationRef = useRef<HTMLDivElement>(null);
-  // const preferencesRef = useRef<HTMLDivElement>(null);
+  const sectionsRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
+  const preferencesRef = useRef<HTMLDivElement>(null);
   const responseRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -395,19 +396,23 @@ export default function Home() {
             onPreferencesSelected={handlePreferencesSelected}
           />
         </Box>
-      </Box>
 
-      {/* Response Section */}
-      <Box
-        ref={responseRef}
-        sx={{
-          position: 'absolute',
-          top: '300vh',
-          width: '100%',
-          height: '100vh',
-        }}
-      >
-        <ResponseSection response={response} loading={loading} error={error} />
+        {/* Response Section */}
+        <Box
+          ref={responseRef}
+          sx={{
+            position: 'absolute',
+            top: '300vh',
+            width: '100%',
+            height: '100vh',
+          }}
+        >
+          <ResponseSection
+            response={response}
+            loading={loading}
+            error={error}
+          />
+        </Box>
       </Box>
     </Box>
   );
