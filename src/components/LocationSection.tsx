@@ -5,7 +5,9 @@ import { styled } from '@mui/material/styles';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState, useEffect } from 'react';
-import Map from './Map';
+import dynamic from 'next/dynamic';
+
+const Map = dynamic(() => import('./Map'), { ssr: false });
 
 const LocationContainer = styled(Box)(({ theme }) => ({
   width: '100%',

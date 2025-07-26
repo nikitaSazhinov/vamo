@@ -2,7 +2,7 @@
 
 import { Box, Typography, Container, Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 const PreferencesContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -12,7 +12,7 @@ const PreferencesContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'flex-start',
   alignItems: 'center',
   paddingTop: '20px',
-  paddingBottom: '40px',
+  paddingBottom: '60px', // Increased bottom padding to prevent cutoff
   position: 'relative',
   overflow: 'visible',
   '&::before': {
@@ -108,50 +108,115 @@ const SubTitle = styled(Typography)(({ theme }) => ({
   },
 }));
 
+const SelectedPreferencesContainer = styled(Box)(({ theme }) => ({
+  width: '100%',
+  maxWidth: '1200px',
+  marginBottom: theme.spacing(3),
+  position: 'relative',
+  zIndex: 3,
+  minHeight: '60px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}));
+
+const SelectedTitle = styled(Typography)(({ theme }) => ({
+  fontSize: '1.2rem',
+  fontFamily: 'var(--font-inter), sans-serif',
+  fontWeight: 700,
+  color: '#FFFFFF',
+  textShadow: '2px 2px 6px rgba(0, 0, 0, 0.8)',
+  marginBottom: theme.spacing(1.5),
+  textAlign: 'center',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  padding: theme.spacing(1, 2),
+  borderRadius: '12px',
+  border: '2px solid #000000',
+  boxShadow: '0 4px 0px #000000, 0 6px 20px rgba(0, 0, 0, 0.4)',
+  '@media (max-width:600px)': {
+    fontSize: '1rem',
+    padding: theme.spacing(0.8, 1.5),
+  },
+}));
+
+const SelectedChipsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: theme.spacing(1.2),
+  marginBottom: theme.spacing(3),
+  minHeight: '50px',
+  width: '100%',
+  padding: theme.spacing(1),
+  '@media (max-width:600px)': {
+    gap: theme.spacing(0.8),
+    marginBottom: theme.spacing(2),
+  },
+}));
+
 const PreferenceChip = styled(Chip)<{
   isSelected: boolean;
-  index: number;
-  chipsize?: string;
-}>(({ theme, isSelected, index, chipsize }) => {
-  const isLarge = chipsize === 'large';
-  const isSmall = chipsize === 'small';
+  isInSelectedArea?: boolean;
+}>(({ theme, isSelected, isInSelectedArea }) => ({
+  fontSize: isInSelectedArea ? '0.9rem' : '1rem',
+  fontFamily: 'var(--font-inter), sans-serif',
+  fontWeight: 600,
+  padding: isInSelectedArea ? '10px 16px' : '14px 20px',
+  margin: isInSelectedArea ? '4px' : '8px',
+  height: 'auto',
+  borderRadius: '25px',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  border: isSelected ? '3px solid #000000' : '2px solid #000000',
+  position: 'relative',
+  zIndex: 3,
+  boxShadow: isSelected
+    ? '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.4)'
+    : '0 4px 0px #000000, 0 6px 15px rgba(0, 0, 0, 0.3)',
+  opacity: 1,
+  transform: 'scale(1)',
+  minWidth: 'fit-content',
+  whiteSpace: 'nowrap',
 
-  return {
-    fontSize: isLarge ? '1.1rem' : isSmall ? '0.9rem' : '1rem',
-    fontFamily: 'var(--font-inter), sans-serif',
-    fontWeight: 600,
-    padding: isLarge ? '16px 24px' : isSmall ? '12px 18px' : '14px 20px',
-    margin: '4px',
-    height: 'auto',
-    borderRadius: '25px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    border: isSelected ? '3px solid #000000' : '2px solid #000000',
-    position: 'relative',
-    zIndex: 3,
-    boxShadow: isSelected
-      ? '0 6px 0px #000000, 0 8px 25px rgba(0, 0, 0, 0.4)'
-      : '0 4px 0px #000000, 0 6px 15px rgba(0, 0, 0, 0.3)',
-    opacity: 1,
-    transform: 'scale(1)',
+  '&:hover': {
+    transform: 'scale(1.05) translateY(-2px)',
+    boxShadow: '0 8px 0px #000000, 0 10px 30px rgba(0, 0, 0, 0.5)',
+  },
 
-    '&:hover': {
-      transform: 'scale(1.05) translateY(-2px)',
-      boxShadow: '0 8px 0px #000000, 0 10px 30px rgba(0, 0, 0, 0.5)',
-    },
+  '&:active': {
+    transform: 'scale(1.02) translateY(1px)',
+    boxShadow: '0 2px 0px #000000, 0 4px 10px rgba(0, 0, 0, 0.3)',
+  },
 
-    '&:active': {
-      transform: 'scale(1.02) translateY(1px)',
-      boxShadow: '0 2px 0px #000000, 0 4px 10px rgba(0, 0, 0, 0.3)',
-    },
+  '@media (max-width:600px)': {
+    fontSize: isInSelectedArea ? '0.8rem' : '0.9rem',
+    padding: isInSelectedArea ? '8px 14px' : '12px 18px',
+    margin: isInSelectedArea ? '3px' : '6px',
+  },
+}));
 
-    '@media (max-width:600px)': {
-      fontSize: isLarge ? '1rem' : isSmall ? '0.85rem' : '0.9rem',
-      padding: isLarge ? '14px 20px' : isSmall ? '10px 16px' : '12px 18px',
-      margin: '3px',
-    },
-  };
-});
+const PreferencesGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: theme.spacing(2),
+  width: '100%',
+  maxWidth: '1200px',
+  justifyItems: 'center',
+  position: 'relative',
+  zIndex: 3,
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(1),
+  '@media (max-width:768px)': {
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: theme.spacing(1.5),
+    marginBottom: theme.spacing(3),
+  },
+  '@media (max-width:480px)': {
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: theme.spacing(1.2),
+    marginBottom: theme.spacing(2),
+  },
+}));
 
 const FloatingEmoji = styled(Box)<{ top: string; left: string; delay: string }>(
   ({ theme, top, left, delay }) => ({
@@ -179,112 +244,325 @@ const FloatingEmoji = styled(Box)<{ top: string; left: string; delay: string }>(
   })
 );
 
-const PreferencesGrid = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  alignItems: 'flex-start',
-  gap: theme.spacing(1),
-  maxWidth: '1000px',
-  width: '100%',
-  padding: theme.spacing(2),
-
-  '& > div': {
-    flexShrink: 0,
-  },
-
-  // Create slight irregular positioning
-  '& > div:nth-of-type(3n)': {
-    transform: 'translateY(8px)',
-  },
-  '& > div:nth-of-type(5n)': {
-    transform: 'translateY(-6px)',
-  },
-  '& > div:nth-of-type(7n)': {
-    transform: 'translateY(4px)',
-  },
-
-  '@media (max-width:768px)': {
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(1),
-
-    '& > div:nth-of-type(3n)': {
-      transform: 'translateY(4px)',
-    },
-    '& > div:nth-of-type(5n)': {
-      transform: 'translateY(-3px)',
-    },
-    '& > div:nth-of-type(7n)': {
-      transform: 'translateY(2px)',
-    },
-  },
-
-  '@media (max-width:480px)': {
-    '& > div': {
-      transform: 'none !important',
-    },
-  },
-}));
-
 interface PreferencesSectionProps {
   onPreferencesSelected: (preferences: string[]) => void;
 }
 
-const preferences = [
-  { label: '🛋️ Lazy & Chill', value: 'lazy', color: '#667eea' },
-  { label: '☕ Cozy Vibes', value: 'cozy', color: '#f093fb' },
-  { label: '🏃 Adventurous', value: 'adventurous', color: '#32CD32' },
-  { label: '🎨 Artsy & Creative', value: 'artsy', color: '#FF4500' },
-  { label: '🍕 Foodie Adventures', value: 'foodie', color: '#FFD700' },
-  { label: '🛍️ Shopping Spree', value: 'shopping', color: '#22c1c3' },
-  { label: '🌿 Nature Lover', value: 'nature', color: '#90EE90' },
-  { label: '🎵 Music & Nightlife', value: 'nightlife', color: '#8A2BE2' },
-  { label: '📚 Learning & Culture', value: 'culture', color: '#FF6347' },
-  { label: '💪 Fitness & Sports', value: 'fitness', color: '#00FA9A' },
-  { label: '📸 Instagram Worthy', value: 'instagram', color: '#fdbb2d' },
-  { label: '👥 Social & Fun', value: 'social', color: '#40E0D0' },
-  { label: '🎭 Theater & Shows', value: 'theater', color: '#DDA0DD' },
-  { label: '🍸 Cocktails & Bars', value: 'cocktails', color: '#FF69B4' },
-  { label: '🏖️ Beach & Water', value: 'beach', color: '#87CEEB' },
-  { label: '⛰️ Mountain Hiking', value: 'hiking', color: '#8FBC8F' },
-  { label: '🎪 Festivals & Events', value: 'festivals', color: '#FF1493' },
-  { label: '🧘 Wellness & Spa', value: 'wellness', color: '#98FB98' },
-  { label: '🎮 Gaming & Tech', value: 'gaming', color: '#4169E1' },
-  { label: '🏛️ Museums & History', value: 'museums', color: '#CD853F' },
-  { label: '🍳 Cooking Classes', value: 'cooking', color: '#FFA500' },
-  { label: '🚴 Biking Around', value: 'biking', color: '#32CD32' },
-  { label: '🎸 Live Music', value: 'livemusic', color: '#FF4500' },
-  { label: '🧗 Rock Climbing', value: 'climbing', color: '#8B4513' },
-  { label: '🎲 Board Games', value: 'boardgames', color: '#9370DB' },
-  { label: '🍦 Sweet Treats', value: 'desserts', color: '#FFB6C1' },
-  { label: '🏄 Extreme Sports', value: 'extreme', color: '#FF6347' },
-  { label: '📖 Book Cafes', value: 'books', color: '#8B4513' },
-  { label: '🎊 Party & Dancing', value: 'party', color: '#FF1493' },
-  { label: '🌅 Sunrise/Sunset', value: 'scenic', color: '#FFA07A' },
-  { label: '🍷 Wine Tasting', value: 'wine', color: '#800080' },
-  { label: '🏰 Historical Sites', value: 'history', color: '#A0522D' },
-  { label: '🎯 Competitive Fun', value: 'competitive', color: '#FF4500' },
-  { label: '🧩 Mind Puzzles', value: 'puzzles', color: '#4682B4' },
-  { label: '🚗 Road Trips', value: 'roadtrips', color: '#32CD32' },
-  { label: '🎨 DIY Crafts', value: 'crafts', color: '#DDA0DD' },
-  { label: '🏊 Swimming', value: 'swimming', color: '#00CED1' },
-  { label: '🌸 Flower Gardens', value: 'gardens', color: '#FFB6C1' },
-  { label: '🎬 Movies & Cinema', value: 'movies', color: '#2F4F4F' },
-  { label: '🍜 Street Food', value: 'streetfood', color: '#FF8C00' },
-  { label: '🎪 Circus & Magic', value: 'circus', color: '#FF1493' },
-  { label: '🏕️ Camping', value: 'camping', color: '#228B22' },
-  { label: '🎤 Karaoke Night', value: 'karaoke', color: '#FF69B4' },
-  { label: '🧊 Ice Skating', value: 'iceskating', color: '#B0E0E6' },
-  { label: '🌊 Surfing', value: 'surfing', color: '#20B2AA' },
-  { label: '🎨 Art Galleries', value: 'artgallery', color: '#9370DB' },
-  { label: '🍰 Baking Fun', value: 'baking', color: '#F0E68C' },
-  { label: '🎪 Amusement Parks', value: 'amusement', color: '#FF1493' },
+const allPreferences = [
+  {
+    label: '🏃 Adventurous',
+    value: 'adventurous',
+    color: '#32CD32',
+    category: 'active',
+  },
+  {
+    label: '💪 Fitness & Sports',
+    value: 'fitness',
+    color: '#00FA9A',
+    category: 'active',
+  },
+  {
+    label: '⛰️ Mountain Hiking',
+    value: 'hiking',
+    color: '#8FBC8F',
+    category: 'active',
+  },
+  {
+    label: '🚴 Biking Around',
+    value: 'biking',
+    color: '#32CD32',
+    category: 'active',
+  },
+  {
+    label: '🧗 Rock Climbing',
+    value: 'climbing',
+    color: '#8B4513',
+    category: 'active',
+  },
+  {
+    label: '🏄 Extreme Sports',
+    value: 'extreme',
+    color: '#FF6347',
+    category: 'active',
+  },
+  {
+    label: '🏊 Swimming',
+    value: 'swimming',
+    color: '#00CED1',
+    category: 'active',
+  },
+  {
+    label: '🌊 Surfing',
+    value: 'surfing',
+    color: '#20B2AA',
+    category: 'active',
+  },
+  {
+    label: '🧊 Ice Skating',
+    value: 'iceskating',
+    color: '#B0E0E6',
+    category: 'active',
+  },
+  {
+    label: '🏕️ Camping',
+    value: 'camping',
+    color: '#228B22',
+    category: 'active',
+  },
+
+  {
+    label: '🎨 Artsy & Creative',
+    value: 'artsy',
+    color: '#FF4500',
+    category: 'creative',
+  },
+  {
+    label: '📚 Learning & Culture',
+    value: 'culture',
+    color: '#FF6347',
+    category: 'creative',
+  },
+  {
+    label: '🎭 Theater & Shows',
+    value: 'theater',
+    color: '#DDA0DD',
+    category: 'creative',
+  },
+  {
+    label: '🎵 Music & Nightlife',
+    value: 'nightlife',
+    color: '#8A2BE2',
+    category: 'creative',
+  },
+  {
+    label: '🎸 Live Music',
+    value: 'livemusic',
+    color: '#FF4500',
+    category: 'creative',
+  },
+  {
+    label: '🏛️ Museums & History',
+    value: 'museums',
+    color: '#CD853F',
+    category: 'creative',
+  },
+  {
+    label: '🎨 Art Galleries',
+    value: 'artgallery',
+    color: '#9370DB',
+    category: 'creative',
+  },
+  {
+    label: '📖 Book Cafes',
+    value: 'books',
+    color: '#8B4513',
+    category: 'creative',
+  },
+  {
+    label: '🎨 DIY Crafts',
+    value: 'crafts',
+    color: '#DDA0DD',
+    category: 'creative',
+  },
+  {
+    label: '🏰 Historical Sites',
+    value: 'history',
+    color: '#A0522D',
+    category: 'creative',
+  },
+
+  {
+    label: '🍕 Foodie Adventures',
+    value: 'foodie',
+    color: '#FFD700',
+    category: 'food',
+  },
+  {
+    label: '🍸 Cocktails & Bars',
+    value: 'cocktails',
+    color: '#FF69B4',
+    category: 'food',
+  },
+  {
+    label: '🍳 Cooking Classes',
+    value: 'cooking',
+    color: '#FFA500',
+    category: 'food',
+  },
+  {
+    label: '🍦 Sweet Treats',
+    value: 'desserts',
+    color: '#FFB6C1',
+    category: 'food',
+  },
+  {
+    label: '🍷 Wine Tasting',
+    value: 'wine',
+    color: '#800080',
+    category: 'food',
+  },
+  {
+    label: '🍜 Street Food',
+    value: 'streetfood',
+    color: '#FF8C00',
+    category: 'food',
+  },
+  {
+    label: '🍰 Baking Fun',
+    value: 'baking',
+    color: '#F0E68C',
+    category: 'food',
+  },
+
+  {
+    label: '👥 Social & Fun',
+    value: 'social',
+    color: '#40E0D0',
+    category: 'social',
+  },
+  {
+    label: '🎊 Party & Dancing',
+    value: 'party',
+    color: '#FF1493',
+    category: 'social',
+  },
+  {
+    label: '🎪 Festivals & Events',
+    value: 'festivals',
+    color: '#FF1493',
+    category: 'social',
+  },
+  {
+    label: '🎤 Karaoke Night',
+    value: 'karaoke',
+    color: '#FF69B4',
+    category: 'social',
+  },
+  {
+    label: '🎲 Board Games',
+    value: 'boardgames',
+    color: '#9370DB',
+    category: 'social',
+  },
+  {
+    label: '🎯 Competitive Fun',
+    value: 'competitive',
+    color: '#FF4500',
+    category: 'social',
+  },
+  {
+    label: '🎬 Movies & Cinema',
+    value: 'movies',
+    color: '#2F4F4F',
+    category: 'social',
+  },
+  {
+    label: '🎪 Circus & Magic',
+    value: 'circus',
+    color: '#FF1493',
+    category: 'social',
+  },
+  {
+    label: '🎪 Amusement Parks',
+    value: 'amusement',
+    color: '#FF1493',
+    category: 'social',
+  },
+
+  {
+    label: '🛋️ Lazy & Chill',
+    value: 'lazy',
+    color: '#667eea',
+    category: 'relaxation',
+  },
+  {
+    label: '☕ Cozy Vibes',
+    value: 'cozy',
+    color: '#f093fb',
+    category: 'relaxation',
+  },
+  {
+    label: '🌿 Nature Lover',
+    value: 'nature',
+    color: '#90EE90',
+    category: 'relaxation',
+  },
+  {
+    label: '🧘 Wellness & Spa',
+    value: 'wellness',
+    color: '#98FB98',
+    category: 'relaxation',
+  },
+  {
+    label: '🏖️ Beach & Water',
+    value: 'beach',
+    color: '#87CEEB',
+    category: 'relaxation',
+  },
+  {
+    label: '🌅 Sunrise/Sunset',
+    value: 'scenic',
+    color: '#FFA07A',
+    category: 'relaxation',
+  },
+  {
+    label: '🌸 Flower Gardens',
+    value: 'gardens',
+    color: '#FFB6C1',
+    category: 'relaxation',
+  },
+
+  {
+    label: '🛍️ Shopping Spree',
+    value: 'shopping',
+    color: '#22c1c3',
+    category: 'lifestyle',
+  },
+  {
+    label: '📸 Instagram Worthy',
+    value: 'instagram',
+    color: '#fdbb2d',
+    category: 'lifestyle',
+  },
+  {
+    label: '🎮 Gaming & Tech',
+    value: 'gaming',
+    color: '#4169E1',
+    category: 'lifestyle',
+  },
+  {
+    label: '🧩 Mind Puzzles',
+    value: 'puzzles',
+    color: '#4682B4',
+    category: 'lifestyle',
+  },
+  {
+    label: '🚗 Road Trips',
+    value: 'roadtrips',
+    color: '#32CD32',
+    category: 'lifestyle',
+  },
 ];
 
 export default function PreferencesSection({
   onPreferencesSelected,
 }: PreferencesSectionProps) {
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+
+  // Get random selection of unselected preferences to display
+  const displayedPreferences = useMemo(() => {
+    const unselected = allPreferences.filter(
+      (p) => !selectedPreferences.includes(p.value)
+    );
+    const shuffled = [...unselected].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 15); // Show 15 options at a time
+  }, [selectedPreferences]);
+
+  const selectedPreferenceObjects = useMemo(() => {
+    return selectedPreferences
+      .map((value) => allPreferences.find((p) => p.value === value))
+      .filter((p): p is (typeof allPreferences)[0] => p !== undefined);
+  }, [selectedPreferences]);
 
   const handlePreferenceToggle = (value: string) => {
     const newPreferences = selectedPreferences.includes(value)
@@ -293,12 +571,6 @@ export default function PreferencesSection({
 
     setSelectedPreferences(newPreferences);
     onPreferencesSelected(newPreferences);
-  };
-
-  const getChipSize = (index: number): 'small' | 'medium' | 'large' => {
-    if (index % 7 === 0) return 'large';
-    if (index % 3 === 0) return 'small';
-    return 'medium';
   };
 
   const getChipStyle = (preference: any, isSelected: boolean) => ({
@@ -336,7 +608,7 @@ export default function PreferencesSection({
       </FloatingEmoji>
 
       <Container
-        maxWidth='lg'
+        maxWidth='xl'
         sx={{ position: 'relative', zIndex: 3, width: '100%' }}
       >
         <Box
@@ -351,33 +623,43 @@ export default function PreferencesSection({
             ✨ What's Your Vibe Today? ✨
           </SectionTitle>
 
-          <SubTitle>
-            Pick all the activities that spark your interest! The more you
-            choose, the better we can help you! 🌈
-          </SubTitle>
-
-          <PreferencesGrid>
-            {preferences.map((preference, index) => {
-              const isSelected = selectedPreferences.includes(preference.value);
-              const chipSize = getChipSize(index);
-
-              return (
-                <Box key={preference.value}>
+          {/* Selected Preferences Section */}
+          {selectedPreferences.length > 0 && (
+            <SelectedPreferencesContainer>
+              <SelectedTitle>🎉 Your Selected Vibes</SelectedTitle>
+              <SelectedChipsContainer>
+                {selectedPreferenceObjects.map((preference) => (
                   <PreferenceChip
+                    key={preference.value}
                     label={preference.label}
                     onClick={() => handlePreferenceToggle(preference.value)}
-                    isSelected={isSelected}
-                    index={index}
-                    chipsize={chipSize}
-                    sx={getChipStyle(preference, isSelected)}
+                    isSelected={true}
+                    isInSelectedArea={true}
+                    sx={getChipStyle(preference, true)}
                   />
-                </Box>
+                ))}
+              </SelectedChipsContainer>
+            </SelectedPreferencesContainer>
+          )}
+
+          {/* Available Preferences Grid */}
+          <PreferencesGrid>
+            {displayedPreferences.map((preference) => {
+              const isSelected = selectedPreferences.includes(preference.value);
+              return (
+                <PreferenceChip
+                  key={preference.value}
+                  label={preference.label}
+                  onClick={() => handlePreferenceToggle(preference.value)}
+                  isSelected={isSelected}
+                  sx={getChipStyle(preference, isSelected)}
+                />
               );
             })}
           </PreferencesGrid>
 
-          {selectedPreferences.length > 0 && (
-            <Box mt={4}>
+          {selectedPreferences.length === 0 && (
+            <Box mt={4} mb={4}>
               <Typography
                 variant='h6'
                 sx={{
@@ -395,9 +677,7 @@ export default function PreferencesSection({
                   position: 'relative',
                 }}
               >
-                🎉 {selectedPreferences.length} vibe
-                {selectedPreferences.length !== 1 ? 's' : ''} selected! Ready to
-                discover amazing activities! 🎉
+                👆 Start selecting activities that interest you!
               </Typography>
             </Box>
           )}

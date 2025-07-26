@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Box } from '@mui/material';
 import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
@@ -8,11 +9,15 @@ import PreferencesSection from '../components/PreferencesSection';
 import ResponseSection from '../components/ResponseSection';
 import WeatherSection from '../components/WeatherSection';
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
@@ -53,6 +58,17 @@ export default function Home() {
     },
     [isScrolling, totalSections]
   );
+
+  // Check for section parameter and navigate accordingly
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section === 'location') {
+      // Small delay to ensure the component is mounted
+      setTimeout(() => {
+        scrollToSectionByIndex(1); // Location section is at index 1
+      }, 100);
+    }
+  }, [searchParams, scrollToSectionByIndex]);
 
   // Handle wheel scroll events
   useEffect(() => {
@@ -250,8 +266,20 @@ export default function Home() {
     setError('');
     setResponse('');
 
+    // Navigate to recommendations page with loading state
+    router.push('/recommendations?loading=true');
+
     // Create the prompt with location and preferences - modified to only give content about places
-    let prompt = `Provide specific recommendations for places to visit within 5km of coordinates ${location.latitude}, ${location.longitude}.`;
+    let prompt = `Provide specific recommendations for places to visit within 5km of your current location.
+
+Please structure your response with:
+## Main Categories
+- Use **bold text** for place names and key features
+- Use bullet points (*) for lists of places
+- Separate different categories with clear headers
+- Include brief descriptions for each recommendation
+
+Format your response to be visually appealing and easy to read.`;
 
     if (preferences.length > 0) {
       const preferenceLabels = preferences.map((pref) => {
@@ -283,7 +311,19 @@ export default function Home() {
       }
     }
 
-    prompt += ` List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.`;
+    prompt += ` 
+
+List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.
+
+Example format:
+## Food & Dining
+* **Café Central** - 123 Main St - Cozy coffee shop with great pastries
+* **Pizza Palace** - 456 Oak Ave - Authentic Italian pizza
+
+## Entertainment
+* **Movie Theater** - 789 Pine St - Latest blockbusters in comfortable seats
+
+Note: Provide recommendations that are actually available in the specific area where the user is located.`;
 
     try {
       const res = await fetch('/api/mistral', {
@@ -291,7 +331,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ 
+          prompt,
+          coordinates: location 
+        }),
       });
 
       const data = await res.json();
@@ -305,16 +348,20 @@ export default function Home() {
       if (content) {
         setResponse(content);
         console.log('Recommendations:', content);
-        // Automatically scroll to the response section when response is available
-        setTimeout(() => {
-          scrollToSectionByIndex(3);
-        }, 500);
+        // Navigate to recommendations page with the response
+        router.push(`/recommendations?response=${encodeURIComponent(content)}`);
       } else {
         throw new Error('No content found in response');
       }
     } catch (error: any) {
       console.error('Error:', error);
       setError(error.message || 'An error occurred');
+      // Navigate to recommendations page with error
+      router.push(
+        `/recommendations?error=${encodeURIComponent(
+          error.message || 'An error occurred'
+        )}`
+      );
     } finally {
       setLoading(false);
     }
@@ -438,5 +485,13 @@ export default function Home() {
         </Box>
       </Box>
     </Box>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
