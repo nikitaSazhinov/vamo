@@ -5,19 +5,28 @@ import { Box } from '@mui/material';
 import HeroSection from '../components/HeroSection';
 import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
+import ResponseSection from '../components/ResponseSection';
 
 export default function Home() {
-  const [userLocation, setUserLocation] = useState<string>('');
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
+  const [response, setResponse] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const sectionsRef = useRef<HTMLDivElement>(null);
+  // const locationRef = useRef<HTMLDivElement>(null);
+  // const preferencesRef = useRef<HTMLDivElement>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const totalSections = 3;
+  const totalSections = 4;
 
   const scrollToSectionByIndex = useCallback(
     (index: number) => {
@@ -45,6 +54,18 @@ export default function Home() {
   // Handle wheel scroll events
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
+      // Check if the event target is inside a scrollable content area
+      const target = event.target as HTMLElement;
+      const isInsideScrollableContent =
+        target.closest('[data-scrollable-content]') ||
+        target.closest('.MuiPaper-root') ||
+        target.closest('[role="dialog"]');
+
+      // If we're inside a scrollable content area, don't prevent default
+      if (isInsideScrollableContent) {
+        return;
+      }
+
       event.preventDefault();
 
       // Block scroll events while transitioning
@@ -88,12 +109,35 @@ export default function Home() {
 
   // Handle touch events for mobile
   useEffect(() => {
+    let touchStartedInScrollable = false;
+    let touchMoved = false;
+
     const handleTouchStart = (event: TouchEvent) => {
+      const target = event.target as HTMLElement;
       touchStartY.current = event.touches[0].clientY;
+      touchMoved = false;
+      // Check if touch started inside a scrollable content area
+      touchStartedInScrollable = !!(
+        target.closest('[data-scrollable-content]') ||
+        target.closest('.MuiPaper-root') ||
+        target.closest('[role="dialog"]')
+      );
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (touchStartedInScrollable) {
+        // Let the scrollable area handle the scroll
+        return;
+      }
+      // Prevent scrolling the main container
+      event.preventDefault();
+      touchMoved = true;
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
       if (isScrolling) return;
+      if (touchStartedInScrollable) return; // Don't swipe sections if touch started in scrollable
+      if (!touchMoved) return; // Only handle if there was a move
 
       const touchEndY = event.changedTouches[0].clientY;
       const deltaY = touchStartY.current - touchEndY;
@@ -119,12 +163,16 @@ export default function Home() {
       container.addEventListener('touchstart', handleTouchStart, {
         passive: false,
       });
+      container.addEventListener('touchmove', handleTouchMove, {
+        passive: false,
+      });
       container.addEventListener('touchend', handleTouchEnd, {
         passive: false,
       });
 
       return () => {
         container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchmove', handleTouchMove);
         container.removeEventListener('touchend', handleTouchEnd);
       };
     }
@@ -168,17 +216,99 @@ export default function Home() {
     scrollToSectionByIndex(1);
   };
 
-  const handleConfirmLocation = () => {
-    setUserLocation('confirmed');
+  const handleConfirmLocation = (location: {
+    latitude: number;
+    longitude: number;
+  }) => {
+    setUserLocation(location);
     scrollToSectionByIndex(2);
   };
 
-  const handlePreferencesSelected = (preferences: string[]) => {
+  const handlePreferencesSelected = async (preferences: string[]) => {
     setUserPreferences(preferences);
-    console.log('User Data:', {
-      location: userLocation,
-      preferences: preferences,
-    });
+
+    // Call the API when we have both location and preferences
+    if (userLocation && preferences.length > 0) {
+      await callRecommendationsAPI(userLocation, preferences);
+    }
+  };
+
+  const callRecommendationsAPI = async (
+    location: { latitude: number; longitude: number },
+    preferences: string[]
+  ) => {
+    setLoading(true);
+    setError('');
+    setResponse('');
+
+    // Create the prompt with location and preferences - modified to only give content about places
+    let prompt = `Provide specific recommendations for places to visit within 5km of coordinates ${location.latitude}, ${location.longitude}.`;
+
+    if (preferences.length > 0) {
+      const preferenceLabels = preferences.map((pref) => {
+        // Map preference values to readable labels
+        const preferenceMap: { [key: string]: string } = {
+          lazy: 'relaxing and chill',
+          cozy: 'cozy and comfortable',
+          adventurous: 'adventurous and exciting',
+          artsy: 'artsy and creative',
+          foodie: 'food and dining',
+          shopping: 'shopping and retail',
+          nature: 'nature and outdoor',
+          nightlife: 'music and nightlife',
+          culture: 'learning and cultural',
+          fitness: 'fitness and sports',
+          instagram: 'instagram-worthy and photogenic',
+          social: 'social and fun',
+        };
+        return preferenceMap[pref] || pref;
+      });
+
+      if (preferenceLabels.length === 1) {
+        prompt += ` Focus on ${preferenceLabels[0]} activities.`;
+      } else {
+        const lastPreference = preferenceLabels.pop();
+        prompt += ` Focus on ${preferenceLabels.join(
+          ', '
+        )} and ${lastPreference} activities.`;
+      }
+    }
+
+    prompt += ` List specific places with names, addresses, and brief descriptions. Do not include any introductory text like "I'm happy to help" or "Here are some recommendations" - just provide the place information directly.`;
+
+    try {
+      const res = await fetch('/api/mistral', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to get response');
+      }
+
+      // Extract the content from the Mistral API response
+      const content = data.choices?.[0]?.message?.content;
+      if (content) {
+        setResponse(content);
+        console.log('Recommendations:', content);
+        // Automatically scroll to the response section when response is available
+        setTimeout(() => {
+          scrollToSectionByIndex(3);
+        }, 500);
+      } else {
+        throw new Error('No content found in response');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      setError(error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -265,6 +395,19 @@ export default function Home() {
             onPreferencesSelected={handlePreferencesSelected}
           />
         </Box>
+      </Box>
+
+      {/* Response Section */}
+      <Box
+        ref={responseRef}
+        sx={{
+          position: 'absolute',
+          top: '300vh',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <ResponseSection response={response} loading={loading} error={error} />
       </Box>
     </Box>
   );
