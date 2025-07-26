@@ -4,12 +4,12 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
-// Custom marker icon
+// Custom mushroom marker
 const icon = L.icon({
-  iconUrl: '/globe.svg', // Using the globe icon from your public folder
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
+  iconUrl: '/marker.png',
+  iconSize: [45, 45],     // Adjusted size for the actual image
+  iconAnchor: [22, 45],   // Bottom center of the icon
+  popupAnchor: [0, -45]   // Top center of the icon
 })
 
 interface MapViewProps {
@@ -46,7 +46,6 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
         zoom={14}
         className="w-full h-full"
       >
-        {/* Cartographic style from Stadia Maps - more modern look */}
         <TileLayer
           attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
           url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
@@ -59,14 +58,15 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
             <Marker 
               position={position}
               icon={icon}
-            />
+            >
+            </Marker>
 
             <Circle
               center={position}
               radius={1000}
               pathOptions={{
-                color: '#6366f1',
-                fillColor: '#6366f1',
+                color: '#FF69B4',
+                fillColor: '#FF69B4',
                 fillOpacity: 0.15,
                 weight: 2
               }}
