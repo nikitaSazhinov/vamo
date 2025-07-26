@@ -7,10 +7,13 @@ import LocationSection from '../components/LocationSection';
 import PreferencesSection from '../components/PreferencesSection';
 
 export default function Home() {
-  const [userLocation, setUserLocation] = useState<string>('');
+  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
+  const [response, setResponse] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
@@ -168,17 +171,87 @@ export default function Home() {
     scrollToSectionByIndex(1);
   };
 
-  const handleConfirmLocation = () => {
-    setUserLocation('confirmed');
+  const handleConfirmLocation = (location: {latitude: number; longitude: number}) => {
+    setUserLocation(location);
     scrollToSectionByIndex(2);
   };
 
-  const handlePreferencesSelected = (preferences: string[]) => {
+  const handlePreferencesSelected = async (preferences: string[]) => {
     setUserPreferences(preferences);
-    console.log('User Data:', {
-      location: userLocation,
-      preferences: preferences,
-    });
+    
+    // Call the API when we have both location and preferences
+    if (userLocation && preferences.length > 0) {
+      await callRecommendationsAPI(userLocation, preferences);
+    }
+  };
+
+  const callRecommendationsAPI = async (location: {latitude: number; longitude: number}, preferences: string[]) => {
+    setLoading(true);
+    setError('');
+    setResponse('');
+
+    // Create the prompt with location and preferences
+    let prompt = `I am currently at coordinates ${location.latitude}, ${location.longitude}, I am looking for something to do in a 5km radius`;
+    
+    if (preferences.length > 0) {
+      const preferenceLabels = preferences.map(pref => {
+        // Map preference values to readable labels
+        const preferenceMap: {[key: string]: string} = {
+          'lazy': 'relaxing and chill',
+          'cozy': 'cozy and comfortable',
+          'adventurous': 'adventurous and exciting',
+          'artsy': 'artsy and creative',
+          'foodie': 'food and dining',
+          'shopping': 'shopping and retail',
+          'nature': 'nature and outdoor',
+          'nightlife': 'music and nightlife',
+          'culture': 'learning and cultural',
+          'fitness': 'fitness and sports',
+          'instagram': 'instagram-worthy and photogenic',
+          'social': 'social and fun'
+        };
+        return preferenceMap[pref] || pref;
+      });
+      
+      if (preferenceLabels.length === 1) {
+        prompt += `. I'm in the mood for ${preferenceLabels[0]} activities`;
+      } else {
+        const lastPreference = preferenceLabels.pop();
+        prompt += `. I'm in the mood for ${preferenceLabels.join(', ')} and ${lastPreference} activities`;
+      }
+    }
+    
+    prompt += `. Please provide specific recommendations with details about each option.`;
+
+    try {
+      const res = await fetch('/api/mistral', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to get response');
+      }
+
+      // Extract the content from the Mistral API response
+      const content = data.choices?.[0]?.message?.content;
+      if (content) {
+        setResponse(content);
+        console.log('Recommendations:', content);
+      } else {
+        throw new Error('No content found in response');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      setError(error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -291,6 +364,54 @@ export default function Home() {
       >
         <PreferencesSection onPreferencesSelected={handlePreferencesSelected} />
       </Box>
+
+      {/* Loading and Response Overlay */}
+      {loading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+          }}
+        >
+          <Box
+            sx={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '10px',
+              textAlign: 'center',
+            }}
+          >
+            <div>Finding recommendations...</div>
+          </Box>
+        </Box>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '20px',
+            left: '20px',
+            right: '20px',
+            background: 'rgba(255, 0, 0, 0.1)',
+            border: '1px solid red',
+            padding: '10px',
+            borderRadius: '5px',
+            zIndex: 2000,
+          }}
+        >
+          Error: {error}
+        </Box>
+      )}
     </Box>
   );
 }
