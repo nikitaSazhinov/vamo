@@ -76,7 +76,7 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
 
             <Circle
               center={position}
-              radius={1000}
+              radius={500}
               pathOptions={{
                 color: '#FF69B4',
                 fillColor: '#FF69B4',
