@@ -4,6 +4,8 @@ import { Box, Typography, Button, Container, Card } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useState, useEffect } from 'react';
+import Map from './Map';
 
 const LocationContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -59,6 +61,25 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   '@media (max-width:600px)': {
     fontSize: '2rem',
     padding: theme.spacing(1.5, 2),
+  },
+}));
+
+const MapContainer = styled(Card)(({ theme }) => ({
+  width: '100%',
+  maxWidth: '500px',
+  height: '350px',
+  borderRadius: '30px',
+  overflow: 'hidden',
+  position: 'relative',
+  marginBottom: theme.spacing(4),
+  border: '4px solid #FFFFFF',
+  boxShadow:
+    '0 12px 40px rgba(0, 0, 0, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.3)',
+  zIndex: 3,
+  backdropFilter: 'blur(10px)',
+  '@media (max-width:600px)': {
+    height: '280px',
+    maxWidth: '400px',
   },
 }));
 
@@ -194,12 +215,50 @@ const FloatingIcon = styled(Box)<{ top: string; left: string; delay: string }>(
 );
 
 interface LocationSectionProps {
-  onConfirmLocation: () => void;
+  onConfirmLocation: (location: {latitude: number; longitude: number}) => void;
 }
 
 export default function LocationSection({
   onConfirmLocation,
 }: LocationSectionProps) {
+  const [location, setLocation] = useState<{latitude: number; longitude: number} | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const getUserLocation = () => {
+      if (!navigator.geolocation) {
+        setError('Geolocation is not supported by your browser');
+        return;
+      }
+
+      setIsLoading(true);
+      setError('');
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          setIsLoading(false);
+        },
+        (error) => {
+          setError('Unable to retrieve your location');
+          setIsLoading(false);
+        }
+      );
+    };
+
+    getUserLocation();
+  }, []);
+
+  const handleConfirmClick = () => {
+    if (location) {
+      onConfirmLocation(location);
+    }
+  };
+
   return (
     <LocationContainer>
       {/* Floating decorative icons */}
@@ -226,22 +285,33 @@ export default function LocationSection({
         >
           <SectionTitle variant='h2'>📍 Let's Get Your Location!</SectionTitle>
 
-          <MapPlaceholder elevation={8}>
-            <MapIcon />
-            <MapText>
-              🗺️ Map Coming Soon! 🗺️
-              <br />
-              Your location will appear here
-            </MapText>
-          </MapPlaceholder>
+          {location ? (
+            <MapContainer elevation={8}>
+              <Map 
+                coordinates={location}
+                isLoading={false}
+              />
+            </MapContainer>
+          ) : (
+            <MapPlaceholder elevation={8}>
+              <MapIcon />
+              <MapText>
+                {isLoading ? 'Getting your location...' : 
+                 error ? `❌ ${error}` :
+                 '🗺️ Getting your location... 🗺️'
+                }
+              </MapText>
+            </MapPlaceholder>
+          )}
 
           <ConfirmButton
             variant='contained'
             size='large'
-            onClick={onConfirmLocation}
+            onClick={handleConfirmClick}
+            disabled={!location || isLoading}
           >
             <CheckCircleIcon sx={{ fontSize: '24px' }} />
-            Yes, This Is My Location! ✨
+            {location ? 'Yes, This Is My Location! ✨' : 'Getting Location...'}
           </ConfirmButton>
         </Box>
       </Container>
