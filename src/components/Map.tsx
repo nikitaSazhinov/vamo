@@ -4,11 +4,12 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
-// Fix for default marker icons in Leaflet
+// Custom marker icon
 const icon = L.icon({
-  iconUrl: '/marker-icon.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconUrl: '/globe.svg', // Using the globe icon from your public folder
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32]
 })
 
 interface MapViewProps {
@@ -19,7 +20,6 @@ interface MapViewProps {
   isLoading?: boolean;
 }
 
-// Component to handle map center updates
 function SetViewOnCoordinates({ coords }: { coords: [number, number] }) {
   const map = useMap()
   useEffect(() => {
@@ -31,7 +31,7 @@ function SetViewOnCoordinates({ coords }: { coords: [number, number] }) {
 const MapView = ({ coordinates, isLoading }: MapViewProps) => {
   const position: [number, number] = coordinates 
     ? [coordinates.latitude, coordinates.longitude]
-    : [51.505, -0.09] // Default to London
+    : [51.505, -0.09]
 
   return (
     <div className="w-full h-full relative">
@@ -46,9 +46,10 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
         zoom={14}
         className="w-full h-full"
       >
+        {/* Cartographic style from Stadia Maps - more modern look */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
         />
 
         {coordinates && (
@@ -57,16 +58,17 @@ const MapView = ({ coordinates, isLoading }: MapViewProps) => {
             
             <Marker 
               position={position}
-              properties={{ icon }}
+              icon={icon}
             />
 
             <Circle
               center={position}
               radius={1000}
               pathOptions={{
-                color: '#4264fb',
-                fillColor: '#4264fb',
-                fillOpacity: 0.2
+                color: '#6366f1',
+                fillColor: '#6366f1',
+                fillOpacity: 0.15,
+                weight: 2
               }}
             />
           </>
